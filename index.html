@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fffaf2">
+  <meta name="description" content="Encontre clínicas veterinárias e petshops perto de você com a PertoPet.">
+  <title>PertoPet — cuidado pertinho de você</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="PertoPet, início">
+        <span class="brand-mark" aria-hidden="true">🐾</span>
+        <span>Perto<span>Pet</span></span>
+      </a>
+      <button class="avatar-button" type="button" aria-label="Abrir perfil de Marina">
+        <span aria-hidden="true">👩🏽</span>
+      </button>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Olá, Marina! <span aria-hidden="true">👋</span></p>
+        <h1 id="page-title">Quem cuida do seu pet está <em>pertinho</em></h1>
+        <p class="subtitle">Encontre o cuidado ideal sem ir longe.</p>
+
+        <form class="search" role="search" id="search-form">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <label class="sr-only" for="search-input">Buscar clínica, petshop ou serviço</label>
+          <input id="search-input" type="search" placeholder="Clínica, petshop ou serviço..." autocomplete="off">
+          <button type="submit" aria-label="Buscar">Buscar</button>
+        </form>
+
+        <div class="location-row">
+          <span class="location-pin" aria-hidden="true">●</span>
+          <span>Próximo a <strong>Aldeota, Fortaleza</strong></span>
+          <button type="button" id="change-location">Alterar</button>
+        </div>
+
+        <div class="filters" aria-label="Filtrar resultados">
+          <button class="filter active" type="button" data-filter="Todos" aria-pressed="true"><span aria-hidden="true">✨</span> Todos</button>
+          <button class="filter" type="button" data-filter="Veterinária" aria-pressed="false"><span aria-hidden="true">🩺</span> Veterinário</button>
+          <button class="filter" type="button" data-filter="Petshop" aria-pressed="false"><span aria-hidden="true">🛍️</span> Petshop</button>
+          <button class="filter" type="button" data-filter="Banho" aria-pressed="false"><span aria-hidden="true">🫧</span> Banho & Tosa</button>
+        </div>
+      </section>
+
+      <section class="map-section" aria-label="Mapa de serviços próximos">
+        <div class="map" id="map">
+          <div class="park park-one"><span>Parque</span></div>
+          <div class="park park-two"></div>
+          <div class="road road-one"></div>
+          <div class="road road-two"></div>
+          <div class="road road-three"></div>
+          <span class="street street-one">Av. Santos Dumont</span>
+          <span class="street street-two">Rua Leonardo Mota</span>
+
+          <button class="map-pin orange selected" data-id="1" aria-label="Clínica Bicho Feliz, nota 4,9"><span>🐾</span></button>
+          <button class="map-pin purple" data-id="2" aria-label="Pet Vida, nota 4,8"><span>🐶</span></button>
+          <button class="map-pin yellow" data-id="3" aria-label="AuMiau Petshop, nota 4,7"><span>🛍️</span></button>
+          <button class="map-pin blue" data-id="4" aria-label="VetCare 24 horas, nota 4,9"><span>✚</span></button>
+
+          <div class="you-are-here" aria-label="Sua localização aproximada">
+            <span></span>
+          </div>
+          <button class="locate-me" id="locate-me" type="button" aria-label="Centralizar na minha localização">⌖</button>
+        </div>
+
+        <div class="results-panel">
+          <div class="panel-handle" aria-hidden="true"></div>
+          <div class="results-heading">
+            <div>
+              <p><span id="result-count">12</span> lugares por perto</p>
+              <span>Ordenados por distância</span>
+            </div>
+            <button type="button" id="view-toggle" aria-label="Alternar visualização"><span aria-hidden="true">☷</span> Lista</button>
+          </div>
+
+          <div class="cards" id="cards" aria-live="polite">
+            <article class="place-card" data-id="1" data-category="Veterinária">
+              <div class="place-image image-clinic" role="img" aria-label="Fachada ilustrada da Clínica Bicho Feliz">
+                <span class="open-badge">Aberto agora</span>
+                <button class="favorite" type="button" aria-label="Adicionar Clínica Bicho Feliz aos favoritos" aria-pressed="false">♡</button>
+                <span class="pet-illustration" aria-hidden="true">🐕</span>
+              </div>
+              <div class="place-content">
+                <div class="place-title"><h2>Clínica Bicho Feliz</h2><span>★ 4,9</span></div>
+                <p>Veterinária • Consultas • Vacinas</p>
+                <div class="meta"><span>📍 450 m</span><span>•</span><span>🚶 6 min</span></div>
+                <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
+              </div>
+            </article>
+
+            <article class="place-card" data-id="2" data-category="Petshop">
+              <div class="place-image image-petshop" role="img" aria-label="Fachada ilustrada do Pet Vida">
+                <span class="open-badge">Aberto até 19h</span>
+                <button class="favorite" type="button" aria-label="Adicionar Pet Vida aos favoritos" aria-pressed="false">♡</button>
+                <span class="pet-illustration" aria-hidden="true">🐈</span>
+              </div>
+              <div class="place-content">
+                <div class="place-title"><h2>Pet Vida</h2><span>★ 4,8</span></div>
+                <p>Petshop • Rações • Acessórios</p>
+                <div class="meta"><span>📍 800 m</span><span>•</span><span>🚶 10 min</span></div>
+                <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
+              </div>
+            </article>
+
+            <article class="place-card" data-id="3" data-category="Banho">
+              <div class="place-image image-grooming" role="img" aria-label="Fachada ilustrada do AuMiau Banho e Tosa">
+                <span class="open-badge">Horários hoje</span>
+                <button class="favorite" type="button" aria-label="Adicionar AuMiau aos favoritos" aria-pressed="false">♡</button>
+                <span class="pet-illustration" aria-hidden="true">🛁</span>
+              </div>
+              <div class="place-content">
+                <div class="place-title"><h2>AuMiau Banho & Tosa</h2><span>★ 4,7</span></div>
+                <p>Banho • Tosa • Hidratação</p>
+                <div class="meta"><span>📍 1,2 km</span><span>•</span><span>🚗 4 min</span></div>
+                <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <a class="active" href="#" aria-current="page"><span aria-hidden="true">⌂</span>Início</a>
+      <a href="#"><span aria-hidden="true">♡</span>Favoritos</a>
+      <button class="nav-search" type="button" aria-label="Buscar serviços"><span aria-hidden="true">⌕</span></button>
+      <a href="#"><span aria-hidden="true">▣</span>Agendas</a>
+      <a href="#"><span aria-hidden="true">☺</span>Perfil</a>
+    </nav>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
