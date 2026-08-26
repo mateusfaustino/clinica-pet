@@ -13,6 +13,9 @@ const locateBtn = document.querySelector("#locate-me");
 const mapContainer = document.querySelector("#map");
 const mapWrapper = document.querySelector(".map-wrapper");
 const mapExpandToggle = document.querySelector("#map-expand-toggle");
+const availabilityFilterBtn = document.querySelector("#availability-filter");
+const resultsEmpty = document.querySelector("#results-empty");
+const clearAvailabilityFilterBtn = document.querySelector("#clear-availability-filter");
 
 // Elementos do Modal de Detalhes
 const detailsModal = document.querySelector("#place-details-modal");
@@ -27,6 +30,7 @@ const modalCategoryBadge = document.querySelector("#modal-category-badge");
 const modalPlaceTitle = document.querySelector("#modal-place-title");
 const modalPlaceRating = document.querySelector("#modal-place-rating");
 const modalPlaceAddress = document.querySelector("#modal-place-address");
+const modalAvailability = document.querySelector("#modal-availability");
 const modalServicesList = document.querySelector("#modal-services-list");
 const modalProductsGrid = document.querySelector("#modal-products-grid");
 const modalAboutContent = document.querySelector("#modal-about-content");
@@ -46,17 +50,129 @@ let currentModalPlace = null;
 let lastFocusedTrigger = null;
 let activeCategory = "Todos";
 let activeSearchTerm = "";
+let showOnlyAvailable = false;
 let toastTimer = null;
 let isMapExpanded = false;
 let mapExpandTrigger = null;
 const placeMarkers = new Map();
 let renderedCardElements = [];
+let availabilityTimer = null;
+
+const FORTALEZA_TIME_ZONE = "America/Fortaleza";
+const WEEK_DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+const WEEK_DAY_LABELS = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
 
 /**
  * Retorna a lista de estabelecimentos carregada de places.js
  */
 function getPlaces() {
   return window.PLACES_DATA || [];
+}
+
+function timeToMinutes(time) {
+  if (typeof time !== "string" || !/^([01]\d|2[0-4]):[0-5]\d$/.test(time)) return null;
+  const [hours, minutes] = time.split(":").map(Number);
+  if (hours === 24 && minutes !== 0) return null;
+  return (hours * 60) + minutes;
+}
+
+function getFortalezaDateParts(referenceDate = new Date()) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: FORTALEZA_TIME_ZONE,
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  });
+  const parts = Object.fromEntries(formatter.formatToParts(referenceDate).map(({ type, value }) => [type, value]));
+  return {
+    dayIndex: WEEK_DAYS.indexOf(parts.weekday.toLowerCase()),
+    minutes: (Number(parts.hour) * 60) + Number(parts.minute)
+  };
+}
+
+function formatClock(time) {
+  const [hours, minutes] = time.split(":");
+  return `${Number(hours)}h${minutes === "00" ? "" : minutes}`;
+}
+
+function getValidIntervals(schedule, dayIndex) {
+  const intervals = schedule?.weekly?.[WEEK_DAYS[dayIndex]];
+  if (!Array.isArray(intervals)) return null;
+  return intervals
+    .map((interval) => ({ ...interval, openMinutes: timeToMinutes(interval.open), closeMinutes: timeToMinutes(interval.close) }))
+    .filter(({ openMinutes, closeMinutes }) => openMinutes !== null && closeMinutes !== null && openMinutes !== closeMinutes);
+}
+
+function isScheduleValid(schedule) {
+  return WEEK_DAYS.every((day) => {
+    const intervals = schedule?.weekly?.[day];
+    return Array.isArray(intervals) && intervals.every((interval) => {
+      const openMinutes = timeToMinutes(interval?.open);
+      const closeMinutes = timeToMinutes(interval?.close);
+      return openMinutes !== null && closeMinutes !== null && openMinutes !== closeMinutes;
+    });
+  });
+}
+
+function findOpenInterval(schedule, dayIndex, currentMinutes) {
+  const today = getValidIntervals(schedule, dayIndex) || [];
+  const todayMatch = today.find(({ openMinutes, closeMinutes }) => {
+    if (openMinutes < closeMinutes) return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+    return currentMinutes >= openMinutes;
+  });
+  if (todayMatch) return { ...todayMatch, closesTomorrow: todayMatch.openMinutes > todayMatch.closeMinutes };
+
+  const previousDayIndex = (dayIndex + 6) % 7;
+  const previousDay = getValidIntervals(schedule, previousDayIndex) || [];
+  const previousMatch = previousDay.find(({ openMinutes, closeMinutes }) => openMinutes > closeMinutes && currentMinutes < closeMinutes);
+  return previousMatch ? { ...previousMatch, closesTomorrow: false } : null;
+}
+
+function findNextOpening(schedule, dayIndex, currentMinutes) {
+  for (let offset = 0; offset <= 7; offset++) {
+    const candidateDay = (dayIndex + offset) % 7;
+    const intervals = getValidIntervals(schedule, candidateDay) || [];
+    const interval = intervals.find(({ openMinutes }) => offset > 0 || openMinutes > currentMinutes);
+    if (interval) return { ...interval, dayOffset: offset, dayIndex: candidateDay };
+  }
+  return null;
+}
+
+/** Retorna disponibilidade operacional; não representa garantia de vaga. */
+function getPlaceAvailability(place, referenceDate = new Date()) {
+  const schedule = place?.openingSchedule;
+  if (schedule?.timeZone !== FORTALEZA_TIME_ZONE || !isScheduleValid(schedule)) {
+    return { state: "unknown", label: "Horário não informado" };
+  }
+
+  const { dayIndex, minutes } = getFortalezaDateParts(referenceDate);
+  if (dayIndex < 0) return { state: "unknown", label: "Horário não informado" };
+  if (schedule.is24Hours) return { state: "open", label: "Atendendo agora · 24 horas" };
+
+  const openInterval = findOpenInterval(schedule, dayIndex, minutes);
+  if (openInterval) {
+    const dayHint = openInterval.closesTomorrow ? " amanhã" : "";
+    return { state: "open", label: `Atendendo agora · até${dayHint} ${formatClock(openInterval.close)}` };
+  }
+
+  const nextOpening = findNextOpening(schedule, dayIndex, minutes);
+  if (!nextOpening) return { state: "closed", label: "Fechado no momento" };
+  const dayLabel = nextOpening.dayOffset === 0 ? "hoje" : nextOpening.dayOffset === 1 ? "amanhã" : WEEK_DAY_LABELS[nextOpening.dayIndex].toLowerCase();
+  return { state: "closed", label: `Fechado · abre ${dayLabel} às ${formatClock(nextOpening.open)}` };
+}
+
+function formatScheduleDay(schedule, dayIndex) {
+  if (schedule?.is24Hours) return "Aberto 24 horas";
+  const intervals = getValidIntervals(schedule, dayIndex);
+  if (!intervals?.length) return "Fechado";
+  return intervals.map(({ open, close }) => `${formatClock(open)} às ${formatClock(close)}`).join(" e ");
+}
+
+function getAvailabilityBadgeLabel(availability) {
+  if (availability.state === "open") return "● Atendendo agora";
+  if (availability.state === "closed") return "Fechado agora";
+  return "Horário não informado";
 }
 
 /**
@@ -144,14 +260,16 @@ function renderCards() {
   const places = getPlaces();
 
   places.forEach((place) => {
+    const availability = getPlaceAvailability(place);
     const card = document.createElement("article");
     card.className = `place-card ${place.id === selectedPlaceId ? "is-selected" : ""}`;
     card.dataset.id = place.id;
     card.dataset.category = place.category;
+    card.dataset.availability = availability.state;
 
     card.innerHTML = `
       <div class="place-image ${place.imageClass || 'image-clinic'}" role="img" aria-label="Fachada ilustrada de ${place.name}">
-        <span class="open-badge">${place.badge || 'Aberto'}</span>
+        <span class="open-badge availability-${availability.state}" aria-live="off" aria-label="${availability.label}. Disponibilidade operacional; não garante vaga imediata." title="${availability.label}">${getAvailabilityBadgeLabel(availability)}</span>
         <button class="favorite" type="button" aria-label="Adicionar ${place.name} aos favoritos" aria-pressed="false">♡</button>
         <span class="pet-illustration" aria-hidden="true">${place.petIllustration || '🐾'}</span>
       </div>
@@ -261,10 +379,47 @@ function selectPlace(placeId, options = { scrollCard: true, panMap: true }) {
 }
 
 /**
- * Aplica filtros de categoria e busca textual aos cards e marcadores
+ * Atualiza os indicadores temporais sem recriar cards ou listeners.
  */
+function updateAvailabilityIndicators(referenceDate = new Date()) {
+  renderedCardElements.forEach((card) => {
+    const place = getPlaces().find((item) => item.id === card.dataset.id);
+    const availability = getPlaceAvailability(place, referenceDate);
+    const badge = card.querySelector(".open-badge");
+    card.dataset.availability = availability.state;
+    if (badge) {
+      badge.textContent = getAvailabilityBadgeLabel(availability);
+      badge.className = `open-badge availability-${availability.state}`;
+      badge.setAttribute("aria-label", `${availability.label}. Disponibilidade operacional; não garante vaga imediata.`);
+      badge.setAttribute("title", availability.label);
+    }
+  });
+
+  if (currentModalPlace && detailsModal?.classList.contains("is-open")) {
+    updateModalAvailability(currentModalPlace, referenceDate);
+  }
+}
+
+function updateModalAvailability(place, referenceDate = new Date()) {
+  if (!modalAvailability) return;
+  const availability = getPlaceAvailability(place, referenceDate);
+  modalAvailability.textContent = availability.label;
+  modalAvailability.className = `modal-availability availability-${availability.state}`;
+}
+
+function setAvailabilityFilter(enabled, announce = true) {
+  showOnlyAvailable = enabled;
+  availabilityFilterBtn?.setAttribute("aria-pressed", String(enabled));
+  availabilityFilterBtn?.classList.toggle("active", enabled);
+  filterPlaces();
+  if (announce) showToast(enabled ? "Exibindo somente locais atendendo agora" : "Exibindo todos os horários");
+}
+
+/** Aplica categoria, busca e disponibilidade à mesma coleção de resultados. */
 function filterPlaces() {
+  updateAvailabilityIndicators();
   let visibleCount = 0;
+  let firstVisibleId = null;
   const term = activeSearchTerm.toLowerCase();
 
   renderedCardElements.forEach((card) => {
@@ -274,10 +429,14 @@ function filterPlaces() {
 
     const matchesCategory = activeCategory === "Todos" || cardCategory === activeCategory;
     const matchesSearch = !term || cardText.includes(term);
-    const isVisible = matchesCategory && matchesSearch;
+    const matchesAvailability = !showOnlyAvailable || card.dataset.availability === "open";
+    const isVisible = matchesCategory && matchesSearch && matchesAvailability;
 
     card.hidden = !isVisible;
-    if (isVisible) visibleCount++;
+    if (isVisible) {
+      visibleCount++;
+      firstVisibleId ||= cardId;
+    }
 
     // Sincroniza visibilidade do marcador no Google Maps
     if (placeMarkers.has(cardId)) {
@@ -287,6 +446,23 @@ function filterPlaces() {
   });
 
   updateCount(visibleCount);
+  if (resultsEmpty) {
+    resultsEmpty.hidden = visibleCount > 0;
+    const message = resultsEmpty.querySelector("p");
+    if (message) message.textContent = showOnlyAvailable
+      ? "Nenhum estabelecimento atendendo com estes critérios."
+      : "Nenhum estabelecimento encontrado com estes critérios.";
+  }
+  if (clearAvailabilityFilterBtn) clearAvailabilityFilterBtn.hidden = !showOnlyAvailable;
+
+  const selectedCard = renderedCardElements.find((card) => card.dataset.id === selectedPlaceId);
+  if (selectedCard?.hidden && firstVisibleId) {
+    selectPlace(firstVisibleId, { scrollCard: false, panMap: false });
+    showToast("A seleção foi atualizada para um resultado visível.");
+  } else if (!firstVisibleId) {
+    renderedCardElements.forEach((card) => card.classList.remove("is-selected"));
+    placeMarkers.forEach(({ element }) => element.classList.remove("selected"));
+  }
 }
 
 // -------------------------------------------------------------
@@ -311,6 +487,7 @@ function openPlaceDetails(placeId, triggerElement = null) {
   if (modalPlaceTitle) modalPlaceTitle.textContent = place.name;
   if (modalPlaceRating) modalPlaceRating.textContent = `★ ${place.rating} (${place.reviewsCount || 45} avaliações)`;
   if (modalPlaceAddress) modalPlaceAddress.textContent = `📍 ${place.address}`;
+  updateModalAvailability(place);
 
   // Sincroniza estado de favorito no modal
   if (modalFavoriteBtn) {
@@ -381,10 +558,9 @@ function openPlaceDetails(placeId, triggerElement = null) {
       <div class="about-block">
         <h4>⏰ Horários de Funcionamento</h4>
         <div class="hours-list">
-          <div class="hours-row"><span>Dias de Semana:</span><strong>${place.openingHours.weekdays}</strong></div>
-          <div class="hours-row"><span>Sábado:</span><strong>${place.openingHours.saturday}</strong></div>
-          <div class="hours-row"><span>Domingo:</span><strong>${place.openingHours.sunday}</strong></div>
+          ${WEEK_DAY_LABELS.map((label, dayIndex) => `<div class="hours-row"><span>${label}:</span><strong>${formatScheduleDay(place.openingSchedule, dayIndex)}</strong></div>`).join("")}
         </div>
+        <p class="availability-disclaimer">A disponibilidade indica o horário operacional cadastrado e não garante vaga imediata.</p>
       </div>
       <div class="about-block">
         <h4>✨ Comodidades e Estrutura</h4>
@@ -652,6 +828,17 @@ filters.forEach((button) => {
   });
 });
 
+if (availabilityFilterBtn) {
+  availabilityFilterBtn.addEventListener("click", () => setAvailabilityFilter(!showOnlyAvailable));
+}
+
+if (clearAvailabilityFilterBtn) {
+  clearAvailabilityFilterBtn.addEventListener("click", () => {
+    setAvailabilityFilter(false);
+    availabilityFilterBtn?.focus();
+  });
+}
+
 // Formulário de Pesquisa
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -682,6 +869,10 @@ if (mapExpandToggle) {
 
 window.addEventListener("resize", () => {
   if (isMapExpanded) refreshMapViewport();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) filterPlaces();
 });
 
 // Eventos de Abas do Modal
@@ -742,4 +933,9 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCards();
   filterPlaces();
   initGoogleMap();
+  availabilityTimer = window.setInterval(filterPlaces, 60000);
+});
+
+window.addEventListener("pagehide", () => {
+  if (availabilityTimer) window.clearInterval(availabilityTimer);
 });

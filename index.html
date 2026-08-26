@@ -48,6 +48,9 @@
           <button class="filter" type="button" data-filter="Petshop" aria-pressed="false"><span aria-hidden="true">🛍️</span> Petshop</button>
           <button class="filter" type="button" data-filter="Banho" aria-pressed="false"><span aria-hidden="true">🫧</span> Banho & Tosa</button>
         </div>
+        <button class="availability-filter" id="availability-filter" type="button" aria-pressed="false">
+          <span aria-hidden="true">🟢</span> Atendendo agora
+        </button>
       </section>
 
       <section class="map-section" aria-label="Mapa de serviços próximos">
@@ -78,6 +81,11 @@
           <div class="cards" id="cards" aria-live="polite">
             <!-- Os cards dos 100 estabelecimentos serão renderizados dinamicamente pelo script.js -->
           </div>
+          <div class="results-empty" id="results-empty" role="status" aria-live="polite" hidden>
+            <span aria-hidden="true">🐾</span>
+            <p>Nenhum estabelecimento atendendo com estes critérios.</p>
+            <button type="button" id="clear-availability-filter">Mostrar todos os horários</button>
+          </div>
         </div>
       </section>
     </main>
@@ -86,7 +94,7 @@
       <a class="active" href="#" aria-current="page"><span aria-hidden="true">⌂</span>Início</a>
       <a href="#"><span aria-hidden="true">♡</span>Favoritos</a>
       <button class="nav-search" type="button" aria-label="Buscar serviços"><span aria-hidden="true">⌕</span></button>
-      <a href="#"><span aria-hidden="true">▣</span>Agendas</a>
+      <a href="#"><span aria-hidden="true">▣</span>Agendamentos</a>
     </nav>
 
     <!-- Modal / Bottom Sheet de Detalhes do Estabelecimento -->
@@ -108,6 +116,7 @@
             <h2 id="modal-place-title">Nome do Estabelecimento</h2>
             <span class="modal-rating" id="modal-place-rating">★ 4,9</span>
           </div>
+          <p class="modal-availability" id="modal-availability"></p>
           <p class="modal-address" id="modal-place-address">📍 Endereço completo...</p>
         </div>
       </div>

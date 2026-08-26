@@ -12071,3 +12071,44 @@ window.PLACES_DATA = [
     ]
   }
 ];
+
+/** Agendas mocadas usadas como fonte de verdade para o horário operacional. */
+const OPENING_SCHEDULE_TEMPLATES = {
+  regular: {
+    monday: [{ open: "08:00", close: "19:00" }], tuesday: [{ open: "08:00", close: "19:00" }],
+    wednesday: [{ open: "08:00", close: "19:00" }], thursday: [{ open: "08:00", close: "19:00" }],
+    friday: [{ open: "08:00", close: "19:00" }], saturday: [{ open: "08:00", close: "17:00" }],
+    sunday: [{ open: "09:00", close: "14:00" }]
+  },
+  splitShift: {
+    monday: [{ open: "08:00", close: "12:00" }, { open: "14:00", close: "20:00" }],
+    tuesday: [{ open: "08:00", close: "12:00" }, { open: "14:00", close: "20:00" }],
+    wednesday: [{ open: "08:00", close: "12:00" }, { open: "14:00", close: "20:00" }],
+    thursday: [{ open: "08:00", close: "12:00" }, { open: "14:00", close: "20:00" }],
+    friday: [{ open: "08:00", close: "12:00" }, { open: "14:00", close: "20:00" }],
+    saturday: [{ open: "08:00", close: "13:00" }], sunday: []
+  },
+  overnight: {
+    monday: [{ open: "18:00", close: "02:00" }], tuesday: [{ open: "18:00", close: "02:00" }],
+    wednesday: [{ open: "18:00", close: "02:00" }], thursday: [{ open: "18:00", close: "02:00" }],
+    friday: [{ open: "18:00", close: "02:00" }], saturday: [{ open: "18:00", close: "02:00" }], sunday: []
+  },
+  alwaysOpen: {
+    monday: [{ open: "00:00", close: "24:00" }], tuesday: [{ open: "00:00", close: "24:00" }],
+    wednesday: [{ open: "00:00", close: "24:00" }], thursday: [{ open: "00:00", close: "24:00" }],
+    friday: [{ open: "00:00", close: "24:00" }], saturday: [{ open: "00:00", close: "24:00" }],
+    sunday: [{ open: "00:00", close: "24:00" }]
+  }
+};
+
+window.PLACES_DATA.forEach((place) => {
+  const numericId = Number(place.id);
+  const templateName = numericId % 10 === 0 ? "alwaysOpen" : numericId % 9 === 0 ? "overnight" : numericId % 4 === 0 ? "splitShift" : "regular";
+  place.openingSchedule = {
+    timeZone: "America/Fortaleza",
+    is24Hours: templateName === "alwaysOpen",
+    weekly: OPENING_SCHEDULE_TEMPLATES[templateName]
+  };
+  delete place.badge;
+  delete place.openingHours;
+});
