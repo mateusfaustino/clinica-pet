@@ -1,9 +1,9 @@
 /**
- * vetPerto - Lógica da Aplicação e Integração com Google Maps
+ * vetPerto - Lógica da Aplicação, Modal de Detalhes e Integração com Google Maps
  * Fonte de dados dos estabelecimentos: window.PLACES_DATA (places.js)
  */
 
-// Elementos da interface
+// Elementos da interface principal
 const filters = document.querySelectorAll(".filter");
 const cardsContainer = document.querySelector("#cards");
 const toast = document.querySelector("#toast");
@@ -12,10 +12,36 @@ const searchInput = document.querySelector("#search-input");
 const locateBtn = document.querySelector("#locate-me");
 const mapContainer = document.querySelector("#map");
 
+// Elementos do Modal de Detalhes
+const detailsModal = document.querySelector("#place-details-modal");
+const modalBackdrop = document.querySelector("#modal-backdrop");
+const modalCloseBtn = document.querySelector("#modal-close-btn");
+const modalFavoriteBtn = document.querySelector("#modal-favorite-btn");
+const modalTabs = document.querySelectorAll(".modal-tab");
+const modalPanes = document.querySelectorAll(".tab-pane");
+
+// Elementos internos do Modal
+const modalCategoryBadge = document.querySelector("#modal-category-badge");
+const modalPlaceTitle = document.querySelector("#modal-place-title");
+const modalPlaceRating = document.querySelector("#modal-place-rating");
+const modalPlaceAddress = document.querySelector("#modal-place-address");
+const modalServicesList = document.querySelector("#modal-services-list");
+const modalProductsGrid = document.querySelector("#modal-products-grid");
+const modalAboutContent = document.querySelector("#modal-about-content");
+const modalReviewsList = document.querySelector("#modal-reviews-list");
+
+// Ações rápidas do Modal
+const actionWhatsapp = document.querySelector("#modal-action-whatsapp");
+const actionCall = document.querySelector("#modal-action-call");
+const actionRoute = document.querySelector("#modal-action-route");
+const actionShare = document.querySelector("#modal-action-share");
+
 // Estado da aplicação
 let mapInstance = null;
 let userMarker = null;
 let selectedPlaceId = "1";
+let currentModalPlace = null;
+let lastFocusedTrigger = null;
 let activeCategory = "Todos";
 let activeSearchTerm = "";
 let toastTimer = null;
@@ -23,21 +49,21 @@ const placeMarkers = new Map();
 let renderedCardElements = [];
 
 /**
- * Retorna os dados dos estabelecimentos carregados do places.js
+ * Retorna a lista de estabelecimentos carregada de places.js
  */
 function getPlaces() {
   return window.PLACES_DATA || [];
 }
 
 /**
- * Exibe notificação acessível e temporária
+ * Exibe notificação acessível e temporária (Toast)
  */
 function showToast(message) {
   if (!toast) return;
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
 }
 
 /**
@@ -51,7 +77,7 @@ function updateCount(count) {
 }
 
 /**
- * Renderiza dinamicamente os cards de estabelecimentos no container #cards
+ * Renderiza dinamicamente os cards de estabelecimentos na página inicial
  */
 function renderCards() {
   if (!cardsContainer) return;
@@ -81,7 +107,7 @@ function renderCards() {
           <span>•</span>
           <span>${place.time}</span>
         </div>
-        <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
+        <button class="route-button" type="button" aria-label="Ver detalhes de ${place.name}">Ver detalhes <span aria-hidden="true">→</span></button>
       </div>
     `;
 
@@ -91,26 +117,22 @@ function renderCards() {
       selectPlace(place.id, { scrollCard: false, panMap: true });
     });
 
-    // Botão "Ver detalhes"
+    // Botão "Ver detalhes" abre o Modal
     const routeBtn = card.querySelector(".route-button");
     if (routeBtn) {
-      routeBtn.addEventListener("click", () => {
-        selectPlace(place.id, { scrollCard: true, panMap: true });
-        showToast(`Abrindo detalhes de ${place.name}`);
+      routeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectPlace(place.id, { scrollCard: false, panMap: true });
+        openPlaceDetails(place.id, routeBtn);
       });
     }
 
-    // Botão de Favoritar
+    // Botão de Favoritar no Card
     const favoriteBtn = card.querySelector(".favorite");
     if (favoriteBtn) {
       favoriteBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const isSaved = favoriteBtn.getAttribute("aria-pressed") !== "true";
-        favoriteBtn.setAttribute("aria-pressed", isSaved);
-        favoriteBtn.classList.toggle("saved", isSaved);
-        favoriteBtn.textContent = isSaved ? "♥" : "♡";
-        favoriteBtn.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${place.name} ${isSaved ? "dos" : "aos"} favoritos`);
-        showToast(isSaved ? `${place.name} salvo nos favoritos` : `${place.name} removido dos favoritos`);
+        toggleFavorite(place.id, favoriteBtn);
       });
     }
 
@@ -118,6 +140,37 @@ function renderCards() {
   });
 
   renderedCardElements = [...cardsContainer.querySelectorAll(".place-card")];
+}
+
+/**
+ * Alterna o estado de favorito de um estabelecimento
+ */
+function toggleFavorite(placeId, buttonElement) {
+  const isSaved = buttonElement.getAttribute("aria-pressed") !== "true";
+  const place = getPlaces().find((p) => p.id === placeId);
+  const placeName = place ? place.name : "Estabelecimento";
+
+  // Atualiza o botão no card
+  const card = renderedCardElements.find((c) => c.dataset.id === placeId);
+  if (card) {
+    const cardFavBtn = card.querySelector(".favorite");
+    if (cardFavBtn) {
+      cardFavBtn.setAttribute("aria-pressed", isSaved);
+      cardFavBtn.classList.toggle("saved", isSaved);
+      cardFavBtn.textContent = isSaved ? "♥" : "♡";
+      cardFavBtn.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${placeName} ${isSaved ? "dos" : "aos"} favoritos`);
+    }
+  }
+
+  // Atualiza o botão no modal (se estiver aberto para o mesmo lugar)
+  if (modalFavoriteBtn && currentModalPlace && currentModalPlace.id === placeId) {
+    modalFavoriteBtn.setAttribute("aria-pressed", isSaved);
+    modalFavoriteBtn.classList.toggle("saved", isSaved);
+    modalFavoriteBtn.textContent = isSaved ? "♥" : "♡";
+    modalFavoriteBtn.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${placeName} ${isSaved ? "dos" : "aos"} favoritos`);
+  }
+
+  showToast(isSaved ? `${placeName} salvo nos favoritos` : `${placeName} removido dos favoritos`);
 }
 
 /**
@@ -142,11 +195,9 @@ function selectPlace(placeId, options = { scrollCard: true, panMap: true }) {
   });
 
   const place = getPlaces().find((p) => p.id === placeId);
-  if (place) {
-    if (options.panMap && mapInstance) {
-      mapInstance.panTo(place.coords);
-      mapInstance.setZoom(16);
-    }
+  if (place && options.panMap && mapInstance) {
+    mapInstance.panTo(place.coords);
+    mapInstance.setZoom(16);
   }
 }
 
@@ -179,6 +230,214 @@ function filterPlaces() {
   updateCount(visibleCount);
 }
 
+// -------------------------------------------------------------
+// Controle do Modal de Detalhes (Bottom Sheet)
+// -------------------------------------------------------------
+
+/**
+ * Abre o modal preenchendo as informações e serviços do estabelecimento
+ */
+function openPlaceDetails(placeId, triggerElement = null) {
+  const place = getPlaces().find((p) => p.id === placeId);
+  if (!place || !detailsModal || !modalBackdrop) return;
+
+  currentModalPlace = place;
+  lastFocusedTrigger = triggerElement;
+
+  // Preenche dados do Cabeçalho
+  if (modalCategoryBadge) {
+    modalCategoryBadge.textContent = place.category;
+    modalCategoryBadge.className = `modal-badge ${place.colorClass}`;
+  }
+  if (modalPlaceTitle) modalPlaceTitle.textContent = place.name;
+  if (modalPlaceRating) modalPlaceRating.textContent = `★ ${place.rating} (${place.reviewsCount || 45} avaliações)`;
+  if (modalPlaceAddress) modalPlaceAddress.textContent = `📍 ${place.address}`;
+
+  // Sincroniza estado de favorito no modal
+  if (modalFavoriteBtn) {
+    const card = renderedCardElements.find((c) => c.dataset.id === placeId);
+    const isSaved = card ? card.querySelector(".favorite")?.getAttribute("aria-pressed") === "true" : false;
+    modalFavoriteBtn.setAttribute("aria-pressed", isSaved);
+    modalFavoriteBtn.classList.toggle("saved", isSaved);
+    modalFavoriteBtn.textContent = isSaved ? "♥" : "♡";
+    modalFavoriteBtn.onclick = () => toggleFavorite(place.id, modalFavoriteBtn);
+  }
+
+  // Renderiza Aba 1: Serviços & Preços
+  if (modalServicesList) {
+    modalServicesList.innerHTML = (place.servicesList || []).map((s) => `
+      <div class="service-item">
+        <div class="service-info">
+          <h4>${s.name}</h4>
+          <p>${s.description}</p>
+          <span class="service-duration">⏱️ ${s.duration}</span>
+        </div>
+        <div class="service-action">
+          <span class="service-price">${s.price}</span>
+          <button type="button" class="book-service-btn" data-service="${s.name}" data-place="${place.name}">Agendar</button>
+        </div>
+      </div>
+    `).join("");
+
+    // Eventos de Agendamento
+    modalServicesList.querySelectorAll(".book-service-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const serviceName = btn.dataset.service;
+        showToast(`Solicitação para "${serviceName}" enviada com sucesso! O local entrará em contato.`);
+      });
+    });
+  }
+
+  // Renderiza Aba 2: Produtos
+  if (modalProductsGrid) {
+    modalProductsGrid.innerHTML = (place.productsList || []).map((p) => `
+      <div class="product-card">
+        <span class="product-tag">${p.tag || 'Disponível'}</span>
+        <div class="product-icon" aria-hidden="true">${p.icon || '🛍️'}</div>
+        <h4 class="product-title">${p.name}</h4>
+        <span class="product-category">${p.category}</span>
+        <div class="product-footer">
+          <span class="product-price">${p.price}</span>
+          <button type="button" class="order-product-btn" data-product="${p.name}">Pedir</button>
+        </div>
+      </div>
+    `).join("");
+
+    // Eventos de Pedido de Produtos
+    modalProductsGrid.querySelectorAll(".order-product-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const prodName = btn.dataset.product;
+        showToast(`"${prodName}" adicionado ao seu pedido!`);
+      });
+    });
+  }
+
+  // Renderiza Aba 3: Sobre & Horários
+  if (modalAboutContent) {
+    modalAboutContent.innerHTML = `
+      <div class="about-block">
+        <h4>🐾 Sobre o Estabelecimento</h4>
+        <p>${place.about}</p>
+      </div>
+      <div class="about-block">
+        <h4>⏰ Horários de Funcionamento</h4>
+        <div class="hours-list">
+          <div class="hours-row"><span>Dias de Semana:</span><strong>${place.openingHours.weekdays}</strong></div>
+          <div class="hours-row"><span>Sábado:</span><strong>${place.openingHours.saturday}</strong></div>
+          <div class="hours-row"><span>Domingo:</span><strong>${place.openingHours.sunday}</strong></div>
+        </div>
+      </div>
+      <div class="about-block">
+        <h4>✨ Comodidades e Estrutura</h4>
+        <div class="amenities-chips">
+          ${(place.amenities || []).map((a) => `<span class="amenity-chip">✓ ${a}</span>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  // Renderiza Aba 4: Avaliações
+  if (modalReviewsList) {
+    modalReviewsList.innerHTML = (place.reviews || []).map((r) => `
+      <div class="review-card">
+        <div class="review-header">
+          <span class="review-author">${r.author}</span>
+          <span class="review-rating" aria-label="${r.rating} de 5 estrelas">${'★'.repeat(r.rating)}</span>
+        </div>
+        <div class="review-pet">Tutor(a) de ${r.pet} • ${r.date}</div>
+        <p class="review-comment">"${r.comment}"</p>
+      </div>
+    `).join("");
+  }
+
+  // Reseta para a primeira aba (Serviços)
+  switchModalTab("services");
+
+  // Configura Ações Rápidas
+  if (actionWhatsapp) {
+    actionWhatsapp.onclick = () => {
+      showToast(`Iniciando conversa no WhatsApp com ${place.name}...`);
+    };
+  }
+  if (actionCall) {
+    actionCall.onclick = () => {
+      showToast(`Ligando para ${place.name} (${place.phone})...`);
+    };
+  }
+  if (actionRoute) {
+    actionRoute.onclick = () => {
+      closePlaceDetails();
+      selectPlace(place.id, { scrollCard: true, panMap: true });
+      showToast(`Centralizando mapa em ${place.name}...`);
+    };
+  }
+  if (actionShare) {
+    actionShare.onclick = () => {
+      if (navigator.share) {
+        navigator.share({
+          title: place.name,
+          text: `Conheça ${place.name} no vetPerto!`,
+          url: window.location.href
+        }).catch(() => {});
+      } else {
+        showToast(`Link de ${place.name} copiado para a área de transferência!`);
+      }
+    };
+  }
+
+  // Exibe o Modal
+  modalBackdrop.classList.add("is-open");
+  detailsModal.classList.add("is-open");
+  modalBackdrop.setAttribute("aria-hidden", "false");
+  detailsModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden"; // Trava rolagem do fundo
+
+  // Foco acessível
+  if (modalCloseBtn) {
+    modalCloseBtn.focus();
+  }
+}
+
+/**
+ * Fecha o modal e restaura o foco anterior
+ */
+function closePlaceDetails() {
+  if (!detailsModal || !modalBackdrop) return;
+
+  modalBackdrop.classList.remove("is-open");
+  detailsModal.classList.remove("is-open");
+  modalBackdrop.setAttribute("aria-hidden", "true");
+  detailsModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = ""; // Libera rolagem do fundo
+  currentModalPlace = null;
+
+  if (lastFocusedTrigger) {
+    lastFocusedTrigger.focus();
+    lastFocusedTrigger = null;
+  }
+}
+
+/**
+ * Alterna as abas internas do modal
+ */
+function switchModalTab(targetTabId) {
+  modalTabs.forEach((tab) => {
+    const isTarget = tab.dataset.tab === targetTabId;
+    tab.classList.toggle("active", isTarget);
+    tab.setAttribute("aria-selected", isTarget);
+  });
+
+  modalPanes.forEach((pane) => {
+    const isTarget = pane.id === `tab-content-${targetTabId}`;
+    pane.classList.toggle("active", isTarget);
+    pane.hidden = !isTarget;
+  });
+}
+
+// -------------------------------------------------------------
+// Inicialização do Google Maps
+// -------------------------------------------------------------
+
 /**
  * Inicializa a API moderna do Google Maps com AdvancedMarkerElement
  */
@@ -188,7 +447,6 @@ async function initGoogleMap() {
   const config = window.GOOGLE_MAPS_CONFIG;
   const hasValidKey = config && config.apiKey && config.apiKey !== "SUA_API_KEY_AQUI";
 
-  // Se não houver chave configurada, exibe fallback amigável
   if (!hasValidKey || typeof google === "undefined" || !google.maps || !google.maps.importLibrary) {
     renderMapFallback();
     return;
@@ -198,10 +456,8 @@ async function initGoogleMap() {
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
-    // Limpa o estado de carregamento
     mapContainer.innerHTML = "";
 
-    // Instancia o mapa do Google
     mapInstance = new Map(mapContainer, {
       center: config.defaultCenter || { lat: -3.7380, lng: -38.5020 },
       zoom: config.defaultZoom || 14,
@@ -213,7 +469,6 @@ async function initGoogleMap() {
 
     const places = getPlaces();
 
-    // Cria marcadores avançados para cada estabelecimento
     places.forEach((place) => {
       const pinElement = document.createElement("button");
       pinElement.className = `map-pin ${place.colorClass} ${place.id === selectedPlaceId ? "selected" : ""}`;
@@ -231,13 +486,12 @@ async function initGoogleMap() {
 
       pinElement.addEventListener("click", () => {
         selectPlace(place.id, { scrollCard: true, panMap: true });
-        showToast(`${place.name} selecionada`);
+        openPlaceDetails(place.id, pinElement);
       });
 
       placeMarkers.set(place.id, { marker, element: pinElement });
     });
 
-    // Aplica o filtro inicial aos marcadores
     filterPlaces();
 
   } catch (error) {
@@ -321,7 +575,7 @@ function locateUser() {
 }
 
 // -------------------------------------------------------------
-// Registro de Eventos da Interface
+// Registro de Eventos Globais da Interface
 // -------------------------------------------------------------
 
 // Filtros de Categoria
@@ -362,6 +616,28 @@ searchInput.addEventListener("input", (event) => {
 if (locateBtn) {
   locateBtn.addEventListener("click", locateUser);
 }
+
+// Eventos de Abas do Modal
+modalTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    switchModalTab(tab.dataset.tab);
+  });
+});
+
+// Fechamento do Modal
+if (modalCloseBtn) {
+  modalCloseBtn.addEventListener("click", closePlaceDetails);
+}
+if (modalBackdrop) {
+  modalBackdrop.addEventListener("click", closePlaceDetails);
+}
+
+// Fechamento via Tecla Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && detailsModal && detailsModal.classList.contains("is-open")) {
+    closePlaceDetails();
+  }
+});
 
 // Ações auxiliares
 const changeLocBtn = document.querySelector("#change-location");

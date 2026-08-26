@@ -188,8 +188,12 @@
       "bases:Criar nova base": false
     }
   },
-  "active": "7ce3f8fecd778b2b",
+  "active": "fec73d6dd76e3b4a",
   "lastOpenFiles": [
+    "changelog/prompts/01_detalhes_estabelecimento.md",
+    "changelog/prompts/00_criar_projeto.md",
+    "changelog/prompts",
+    "changelog/00_criar_projeto/00_criar_projeto.md",
     "spec/maps/google_maps.md",
     "spec/maps/google_cloud_console.md",
     "spec/maps/github_pages.md"
