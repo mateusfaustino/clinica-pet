@@ -1,0 +1,12 @@
+# Configurações com credenciais locais
+config.js
+
+# Ambientes e dependências locais
+.env
+node_modules/
+
+# Arquivos do sistema operacional / IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
