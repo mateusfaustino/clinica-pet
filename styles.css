@@ -158,11 +158,13 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
 .quick-action-btn.primary:hover { background: #1e7a3a; color: white; }
 .quick-action-btn:hover { transform: translateY(-2px); background: #f3efe8; }
 
-/* Abas */
-.modal-tabs { display: flex; gap: 8px; padding: 12px 20px 8px; overflow-x: auto; scrollbar-width: none; background: var(--cream); border-bottom: 1px solid rgba(0,0,0,.05); }
+/* Abas de Navegação Interna */
+.modal-tabs { display: flex; align-items: center; gap: 8px; padding: 12px 20px; overflow-x: auto; scrollbar-width: none; background: var(--cream); border-bottom: 1px solid rgba(0,0,0,.06); }
 .modal-tabs::-webkit-scrollbar { display: none; }
-.modal-tab { padding: 8px 14px; border: 1px solid transparent; border-radius: 14px; background: white; color: var(--muted); font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: .2s; }
-.modal-tab.active { background: var(--ink); color: white; border-color: var(--ink); box-shadow: 0 4px 12px rgba(36,59,56,.15); }
+.modal-tab { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 0 auto; min-height: 42px; padding: 0 16px; border: 1.5px solid #e5e0d8; border-radius: 14px; background: white; color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 800; line-height: 1; cursor: pointer; white-space: nowrap; transition: all .2s ease; box-sizing: border-box; }
+.modal-tab span { display: inline-flex; align-items: center; font-size: 15px; line-height: 1; }
+.modal-tab:hover { border-color: #cfc9bf; color: var(--ink); }
+.modal-tab.active { background: var(--ink); color: white; border-color: var(--ink); box-shadow: 0 5px 14px rgba(36,59,56,.18); }
 
 /* Conteúdo */
 .modal-body { padding: 16px 20px 30px; overflow-y: auto; flex: 1; }
