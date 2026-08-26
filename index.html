@@ -72,47 +72,7 @@
           </div>
 
           <div class="cards" id="cards" aria-live="polite">
-            <article class="place-card" data-id="1" data-category="Veterinária">
-              <div class="place-image image-clinic" role="img" aria-label="Fachada ilustrada da Clínica Bicho Feliz">
-                <span class="open-badge">Aberto agora</span>
-                <button class="favorite" type="button" aria-label="Adicionar Clínica Bicho Feliz aos favoritos" aria-pressed="false">♡</button>
-                <span class="pet-illustration" aria-hidden="true">🐕</span>
-              </div>
-              <div class="place-content">
-                <div class="place-title"><h2>Clínica Bicho Feliz</h2><span>★ 4,9</span></div>
-                <p>Veterinária • Consultas • Vacinas</p>
-                <div class="meta"><span>📍 450 m</span><span>•</span><span>🚶 6 min</span></div>
-                <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
-              </div>
-            </article>
-
-            <article class="place-card" data-id="2" data-category="Petshop">
-              <div class="place-image image-petshop" role="img" aria-label="Fachada ilustrada do Pet Vida">
-                <span class="open-badge">Aberto até 19h</span>
-                <button class="favorite" type="button" aria-label="Adicionar Pet Vida aos favoritos" aria-pressed="false">♡</button>
-                <span class="pet-illustration" aria-hidden="true">🐈</span>
-              </div>
-              <div class="place-content">
-                <div class="place-title"><h2>Pet Vida</h2><span>★ 4,8</span></div>
-                <p>Petshop • Rações • Acessórios</p>
-                <div class="meta"><span>📍 800 m</span><span>•</span><span>🚶 10 min</span></div>
-                <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
-              </div>
-            </article>
-
-            <article class="place-card" data-id="3" data-category="Banho">
-              <div class="place-image image-grooming" role="img" aria-label="Fachada ilustrada do AuMiau Banho e Tosa">
-                <span class="open-badge">Horários hoje</span>
-                <button class="favorite" type="button" aria-label="Adicionar AuMiau aos favoritos" aria-pressed="false">♡</button>
-                <span class="pet-illustration" aria-hidden="true">🛁</span>
-              </div>
-              <div class="place-content">
-                <div class="place-title"><h2>AuMiau Banho & Tosa</h2><span>★ 4,7</span></div>
-                <p>Banho • Tosa • Hidratação</p>
-                <div class="meta"><span>📍 1,2 km</span><span>•</span><span>🚗 4 min</span></div>
-                <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
-              </div>
-            </article>
+            <!-- Os cards dos 100 estabelecimentos serão renderizados dinamicamente pelo script.js -->
           </div>
         </div>
       </section>
@@ -129,6 +89,8 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 
+  <!-- Base de Dados de Estabelecimentos (100 locais em Fortaleza) -->
+  <script src="places.js"></script>
   <!-- Configuração do Google Maps (carregada do config.js se existir) -->
   <script src="config.js" onerror="window.GOOGLE_MAPS_CONFIG = window.GOOGLE_MAPS_CONFIG || null;"></script>
   <!-- Bootstrap Loader Oficial do Google Maps -->

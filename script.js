@@ -1,66 +1,11 @@
 /**
  * vetPerto - Lógica da Aplicação e Integração com Google Maps
+ * Fonte de dados dos estabelecimentos: window.PLACES_DATA (places.js)
  */
-
-// Dados dos estabelecimentos com coordenadas geográficas (Fortaleza - CE)
-const PLACES_DATA = [
-  {
-    id: "1",
-    name: "Clínica Bicho Feliz",
-    category: "Veterinária",
-    rating: "4,9",
-    services: "Veterinária • Consultas • Vacinas",
-    distance: "450 m",
-    time: "6 min",
-    badge: "Aberto agora",
-    icon: "🐾",
-    colorClass: "orange",
-    coords: { lat: -3.7372, lng: -38.5035 }
-  },
-  {
-    id: "2",
-    name: "Pet Vida",
-    category: "Petshop",
-    rating: "4,8",
-    services: "Petshop • Rações • Acessórios",
-    distance: "800 m",
-    time: "10 min",
-    badge: "Aberto até 19h",
-    icon: "🐶",
-    colorClass: "purple",
-    coords: { lat: -3.7405, lng: -38.4998 }
-  },
-  {
-    id: "3",
-    name: "AuMiau Banho & Tosa",
-    category: "Banho",
-    rating: "4,7",
-    services: "Banho • Tosa • Hidratação",
-    distance: "1,2 km",
-    time: "4 min",
-    badge: "Horários hoje",
-    icon: "🛁",
-    colorClass: "yellow",
-    coords: { lat: -3.7348, lng: -38.4982 }
-  },
-  {
-    id: "4",
-    name: "VetCare 24 horas",
-    category: "Veterinária",
-    rating: "4,9",
-    services: "Hospital 24h • Emergências • Cirurgias",
-    distance: "1,5 km",
-    time: "6 min",
-    badge: "Plantão 24h",
-    icon: "✚",
-    colorClass: "blue",
-    coords: { lat: -3.7420, lng: -38.5080 }
-  }
-];
 
 // Elementos da interface
 const filters = document.querySelectorAll(".filter");
-const cards = [...document.querySelectorAll(".place-card")];
+const cardsContainer = document.querySelector("#cards");
 const toast = document.querySelector("#toast");
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
@@ -75,6 +20,14 @@ let activeCategory = "Todos";
 let activeSearchTerm = "";
 let toastTimer = null;
 const placeMarkers = new Map();
+let renderedCardElements = [];
+
+/**
+ * Retorna os dados dos estabelecimentos carregados do places.js
+ */
+function getPlaces() {
+  return window.PLACES_DATA || [];
+}
 
 /**
  * Exibe notificação acessível e temporária
@@ -98,6 +51,76 @@ function updateCount(count) {
 }
 
 /**
+ * Renderiza dinamicamente os cards de estabelecimentos no container #cards
+ */
+function renderCards() {
+  if (!cardsContainer) return;
+  cardsContainer.innerHTML = "";
+  const places = getPlaces();
+
+  places.forEach((place) => {
+    const card = document.createElement("article");
+    card.className = `place-card ${place.id === selectedPlaceId ? "is-selected" : ""}`;
+    card.dataset.id = place.id;
+    card.dataset.category = place.category;
+
+    card.innerHTML = `
+      <div class="place-image ${place.imageClass || 'image-clinic'}" role="img" aria-label="Fachada ilustrada de ${place.name}">
+        <span class="open-badge">${place.badge || 'Aberto'}</span>
+        <button class="favorite" type="button" aria-label="Adicionar ${place.name} aos favoritos" aria-pressed="false">♡</button>
+        <span class="pet-illustration" aria-hidden="true">${place.petIllustration || '🐾'}</span>
+      </div>
+      <div class="place-content">
+        <div class="place-title">
+          <h2>${place.name}</h2>
+          <span>★ ${place.rating}</span>
+        </div>
+        <p>${place.services}</p>
+        <div class="meta">
+          <span>📍 ${place.distance} (${place.neighborhood})</span>
+          <span>•</span>
+          <span>${place.time}</span>
+        </div>
+        <button class="route-button" type="button">Ver detalhes <span aria-hidden="true">→</span></button>
+      </div>
+    `;
+
+    // Clique no card foca no mapa
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".favorite") || e.target.closest(".route-button")) return;
+      selectPlace(place.id, { scrollCard: false, panMap: true });
+    });
+
+    // Botão "Ver detalhes"
+    const routeBtn = card.querySelector(".route-button");
+    if (routeBtn) {
+      routeBtn.addEventListener("click", () => {
+        selectPlace(place.id, { scrollCard: true, panMap: true });
+        showToast(`Abrindo detalhes de ${place.name}`);
+      });
+    }
+
+    // Botão de Favoritar
+    const favoriteBtn = card.querySelector(".favorite");
+    if (favoriteBtn) {
+      favoriteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isSaved = favoriteBtn.getAttribute("aria-pressed") !== "true";
+        favoriteBtn.setAttribute("aria-pressed", isSaved);
+        favoriteBtn.classList.toggle("saved", isSaved);
+        favoriteBtn.textContent = isSaved ? "♥" : "♡";
+        favoriteBtn.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${place.name} ${isSaved ? "dos" : "aos"} favoritos`);
+        showToast(isSaved ? `${place.name} salvo nos favoritos` : `${place.name} removido dos favoritos`);
+      });
+    }
+
+    cardsContainer.appendChild(card);
+  });
+
+  renderedCardElements = [...cardsContainer.querySelectorAll(".place-card")];
+}
+
+/**
  * Seleciona um estabelecimento, sincronizando o card e o marcador no mapa
  */
 function selectPlace(placeId, options = { scrollCard: true, panMap: true }) {
@@ -109,7 +132,7 @@ function selectPlace(placeId, options = { scrollCard: true, panMap: true }) {
   });
 
   // Atualiza estado visual dos cards
-  cards.forEach((card) => {
+  renderedCardElements.forEach((card) => {
     const isTarget = card.dataset.id === placeId;
     card.classList.toggle("is-selected", isTarget);
     if (isTarget && options.scrollCard) {
@@ -118,7 +141,7 @@ function selectPlace(placeId, options = { scrollCard: true, panMap: true }) {
     }
   });
 
-  const place = PLACES_DATA.find((p) => p.id === placeId);
+  const place = getPlaces().find((p) => p.id === placeId);
   if (place) {
     if (options.panMap && mapInstance) {
       mapInstance.panTo(place.coords);
@@ -134,7 +157,7 @@ function filterPlaces() {
   let visibleCount = 0;
   const term = activeSearchTerm.toLowerCase();
 
-  cards.forEach((card) => {
+  renderedCardElements.forEach((card) => {
     const cardCategory = card.dataset.category;
     const cardId = card.dataset.id;
     const cardText = card.textContent.toLowerCase();
@@ -181,15 +204,17 @@ async function initGoogleMap() {
     // Instancia o mapa do Google
     mapInstance = new Map(mapContainer, {
       center: config.defaultCenter || { lat: -3.7380, lng: -38.5020 },
-      zoom: config.defaultZoom || 15,
+      zoom: config.defaultZoom || 14,
       mapId: config.mapId || "DEMO_MAP_ID",
       disableDefaultUI: true,
       zoomControl: true,
       clickableIcons: false
     });
 
+    const places = getPlaces();
+
     // Cria marcadores avançados para cada estabelecimento
-    PLACES_DATA.forEach((place) => {
+    places.forEach((place) => {
       const pinElement = document.createElement("button");
       pinElement.className = `map-pin ${place.colorClass} ${place.id === selectedPlaceId ? "selected" : ""}`;
       pinElement.setAttribute("data-id", place.id);
@@ -200,7 +225,7 @@ async function initGoogleMap() {
       const marker = new AdvancedMarkerElement({
         map: mapInstance,
         position: place.coords,
-        title: place.name,
+        title: `${place.name} (${place.neighborhood})`,
         content: pinElement
       });
 
@@ -211,6 +236,9 @@ async function initGoogleMap() {
 
       placeMarkers.set(place.id, { marker, element: pinElement });
     });
+
+    // Aplica o filtro inicial aos marcadores
+    filterPlaces();
 
   } catch (error) {
     console.warn("vetPerto: Não foi possível carregar o Google Maps dinâmico:", error);
@@ -321,8 +349,8 @@ searchForm.addEventListener("submit", (event) => {
     return;
   }
   filterPlaces();
-  const visibleCards = cards.filter((c) => !c.hidden);
-  showToast(visibleCards.length ? `${visibleCards.length} resultado(s) encontrado(s)` : "Nenhum lugar encontrado.");
+  const visibleCount = renderedCardElements.filter((c) => !c.hidden).length;
+  showToast(visibleCount ? `${visibleCount} resultado(s) encontrado(s)` : "Nenhum lugar encontrado.");
 });
 
 searchInput.addEventListener("input", (event) => {
@@ -335,55 +363,21 @@ if (locateBtn) {
   locateBtn.addEventListener("click", locateUser);
 }
 
-// Botões dos Cards e Favoritos
-cards.forEach((card) => {
-  const cardId = card.dataset.id;
-
-  // Clique no card foca no mapa
-  card.addEventListener("click", (e) => {
-    if (e.target.closest(".favorite") || e.target.closest(".route-button")) return;
-    selectPlace(cardId, { scrollCard: false, panMap: true });
-  });
-
-  // Botão "Ver detalhes"
-  const routeBtn = card.querySelector(".route-button");
-  if (routeBtn) {
-    routeBtn.addEventListener("click", () => {
-      selectPlace(cardId, { scrollCard: true, panMap: true });
-      showToast(`Abrindo detalhes de ${card.querySelector("h2").textContent}`);
-    });
-  }
-});
-
-// Favoritar Lugares
-document.querySelectorAll(".favorite").forEach((button) => {
-  button.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isSaved = button.getAttribute("aria-pressed") !== "true";
-    const name = button.closest(".place-card").querySelector("h2").textContent;
-    button.setAttribute("aria-pressed", isSaved);
-    button.classList.toggle("saved", isSaved);
-    button.textContent = isSaved ? "♥" : "♡";
-    button.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${name} ${isSaved ? "dos" : "aos"} favoritos`);
-    showToast(isSaved ? `${name} salvo nos favoritos` : `${name} removido dos favoritos`);
-  });
-});
-
 // Ações auxiliares
 const changeLocBtn = document.querySelector("#change-location");
 if (changeLocBtn) {
   changeLocBtn.addEventListener("click", () => {
-    searchInput.value = "Meireles, Fortaleza";
-    activeSearchTerm = "Meireles, Fortaleza";
+    searchInput.value = "Aldeota";
+    activeSearchTerm = "Aldeota";
     searchInput.focus();
     filterPlaces();
-    showToast("Filtrando por Meireles, Fortaleza");
+    showToast("Filtrando por Aldeota");
   });
 }
 
 const viewToggleBtn = document.querySelector("#view-toggle");
 if (viewToggleBtn) {
-  viewToggleBtn.addEventListener("click", () => showToast("Você já está vendo a lista de lugares"));
+  viewToggleBtn.addEventListener("click", () => showToast("Exibindo lista de lugares"));
 }
 
 const navSearchBtn = document.querySelector(".nav-search");
@@ -398,6 +392,7 @@ if (navSearchBtn) {
 // Inicialização
 // -------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
+  renderCards();
   filterPlaces();
   initGoogleMap();
 });
