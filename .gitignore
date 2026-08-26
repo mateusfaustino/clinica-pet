@@ -1,5 +1,5 @@
 # Configurações com credenciais locais
-config.js
+# config.js
 
 # Ambientes e dependências locais
 .env
