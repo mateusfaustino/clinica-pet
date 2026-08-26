@@ -25,6 +25,7 @@ body {
   font-family: "Nunito", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+body.map-is-expanded { overflow: hidden; }
 button, input { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
@@ -61,6 +62,8 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
 .map-section { position: relative; }
 .map-wrapper { position: relative; width: 100%; }
 .map { height: 360px; width: 100%; position: relative; overflow: hidden; background-color: #e5e3df; }
+.map-wrapper.is-expanded { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 980; background: #e5e3df; }
+.map-wrapper.is-expanded .map { width: 100%; height: 100%; min-height: 0; }
 .map-loading, .map-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; background: #f4efe6; color: var(--ink); z-index: 2; }
 .map-loading .loading-spinner { font-size: 32px; animation: bounce 1.2s infinite; }
 .map-fallback h3 { font-family: "Fredoka"; font-size: 18px; margin: 0 0 6px; color: var(--orange-dark); }
@@ -81,7 +84,14 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
 .you-are-here-marker { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: rgba(76,158,217,.3); animation: pulse 2.2s infinite; }
 .you-are-here-marker span { width: 12px; height: 12px; border: 2.5px solid white; border-radius: 50%; background: #338ad0; box-shadow: 0 2px 6px rgba(30,92,140,.4); }
 
-.locate-me { position: absolute; right: 18px; top: 18px; width: 45px; height: 45px; border: 0; border-radius: 14px; background: white; color: var(--ink); font-size: 26px; box-shadow: var(--shadow); z-index: 4; cursor: pointer; transition: transform .15s, background-color .15s; }
+.map-expand-toggle { position: absolute; right: 18px; top: 18px; min-width: 45px; min-height: 45px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border: 0; border-radius: 14px; background: white; color: var(--ink); box-shadow: var(--shadow); z-index: 4; cursor: pointer; font-size: 13px; font-weight: 800; transition: transform .15s, background-color .15s; }
+.map-expand-icon { font-family: Arial, sans-serif; font-size: 22px; line-height: 1; }
+.map-expand-toggle:hover { transform: scale(1.03); background-color: #fffaf5; }
+.map-expand-toggle:active { transform: scale(.97); }
+.map-expand-toggle:focus-visible, .locate-me:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+.locate-me { position: absolute; right: 18px; top: 75px; width: 45px; height: 45px; border: 0; border-radius: 14px; background: white; color: var(--ink); font-size: 26px; box-shadow: var(--shadow); z-index: 4; cursor: pointer; transition: transform .15s, background-color .15s; }
+.map-wrapper.is-expanded .map-expand-toggle { top: max(18px, env(safe-area-inset-top)); right: max(18px, env(safe-area-inset-right)); }
+.map-wrapper.is-expanded .locate-me { top: max(75px, calc(env(safe-area-inset-top) + 75px)); right: max(18px, env(safe-area-inset-right)); }
 .locate-me:hover { transform: scale(1.05); background-color: #fffaf5; }
 .locate-me:active { transform: scale(0.95); }
 @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(61,143,207,.1); } 50% { box-shadow: 0 0 0 10px rgba(61,143,207,.16); } }
@@ -229,6 +239,11 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
   /* Modal no Desktop */
   .place-details-modal { left: 50%; top: 50%; bottom: auto; right: auto; width: min(92vw, 660px); max-height: 84vh; border-radius: 28px; transform: translate(-50%, -46%) scale(0.95); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1), opacity .3s ease; }
   .place-details-modal.is-open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
+}
+
+@media (max-width: 420px) {
+  .map-expand-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .map-expand-toggle { width: 45px; padding: 0; }
 }
 
 @media (min-width: 1040px) {

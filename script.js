@@ -11,6 +11,8 @@ const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
 const locateBtn = document.querySelector("#locate-me");
 const mapContainer = document.querySelector("#map");
+const mapWrapper = document.querySelector(".map-wrapper");
+const mapExpandToggle = document.querySelector("#map-expand-toggle");
 
 // Elementos do Modal de Detalhes
 const detailsModal = document.querySelector("#place-details-modal");
@@ -45,6 +47,8 @@ let lastFocusedTrigger = null;
 let activeCategory = "Todos";
 let activeSearchTerm = "";
 let toastTimer = null;
+let isMapExpanded = false;
+let mapExpandTrigger = null;
 const placeMarkers = new Map();
 let renderedCardElements = [];
 
@@ -64,6 +68,61 @@ function showToast(message) {
   toast.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
+}
+
+/**
+ * Solicita ao Google Maps que recalcule a área visível sem perder a navegação.
+ */
+function refreshMapViewport(center = mapInstance?.getCenter(), zoom = mapInstance?.getZoom()) {
+  if (!mapInstance) return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (window.google?.maps?.event) {
+        window.google.maps.event.trigger(mapInstance, "resize");
+      }
+      if (center) mapInstance.setCenter(center);
+      if (typeof zoom === "number") mapInstance.setZoom(zoom);
+    });
+  });
+}
+
+/**
+ * Mantém classes, textos e atributos acessíveis do mapa em uma única atualização.
+ */
+function setMapExpanded(expanded, trigger = mapExpandToggle) {
+  if (!mapWrapper || !mapExpandToggle || expanded === isMapExpanded) return;
+
+  const currentCenter = mapInstance?.getCenter();
+  const currentZoom = mapInstance?.getZoom();
+  if (expanded) mapExpandTrigger = trigger;
+
+  isMapExpanded = expanded;
+  mapWrapper.classList.toggle("is-expanded", expanded);
+  document.body.classList.toggle("map-is-expanded", expanded);
+  mapExpandToggle.setAttribute("aria-expanded", String(expanded));
+
+  const actionLabel = expanded ? "Recolher mapa" : "Expandir mapa";
+  mapExpandToggle.setAttribute("aria-label", actionLabel);
+  mapExpandToggle.setAttribute("title", actionLabel);
+  mapExpandToggle.querySelector(".map-expand-label").textContent = actionLabel;
+  mapExpandToggle.querySelector(".map-expand-icon").textContent = expanded ? "×" : "⛶";
+
+  refreshMapViewport(currentCenter, currentZoom);
+
+  if (expanded) {
+    mapExpandToggle.focus();
+    showToast("Mapa expandido. Pressione Esc para recolher.");
+  } else {
+    const focusTarget = mapExpandTrigger;
+    mapExpandTrigger = null;
+    focusTarget?.focus();
+    showToast("Mapa recolhido.");
+  }
+}
+
+function toggleExpandedMap() {
+  setMapExpanded(!isMapExpanded, mapExpandToggle);
 }
 
 /**
@@ -617,6 +676,14 @@ if (locateBtn) {
   locateBtn.addEventListener("click", locateUser);
 }
 
+if (mapExpandToggle) {
+  mapExpandToggle.addEventListener("click", toggleExpandedMap);
+}
+
+window.addEventListener("resize", () => {
+  if (isMapExpanded) refreshMapViewport();
+});
+
 // Eventos de Abas do Modal
 modalTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -636,6 +703,10 @@ if (modalBackdrop) {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && detailsModal && detailsModal.classList.contains("is-open")) {
     closePlaceDetails();
+    return;
+  }
+  if (e.key === "Escape" && isMapExpanded) {
+    setMapExpanded(false);
   }
 });
 
