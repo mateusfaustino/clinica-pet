@@ -261,6 +261,7 @@ function renderCards() {
 
   places.forEach((place) => {
     const availability = getPlaceAvailability(place);
+    const isSaved = window.VetPertoFavorites?.isFavorite(place.id) || false;
     const card = document.createElement("article");
     card.className = `place-card ${place.id === selectedPlaceId ? "is-selected" : ""}`;
     card.dataset.id = place.id;
@@ -270,7 +271,7 @@ function renderCards() {
     card.innerHTML = `
       <div class="place-image ${place.imageClass || 'image-clinic'}" role="img" aria-label="Fachada ilustrada de ${place.name}">
         <span class="open-badge availability-${availability.state}" aria-live="off" aria-label="${availability.label}. Disponibilidade operacional; não garante vaga imediata." title="${availability.label}">${getAvailabilityBadgeLabel(availability)}</span>
-        <button class="favorite" type="button" aria-label="Adicionar ${place.name} aos favoritos" aria-pressed="false">♡</button>
+        <button class="favorite ${isSaved ? "saved" : ""}" type="button" data-favorite-id="${place.id}" aria-label="${isSaved ? "Remover" : "Adicionar"} ${place.name} ${isSaved ? "dos" : "aos"} favoritos" aria-pressed="${isSaved}">${isSaved ? "♥" : "♡"}</button>
         <span class="pet-illustration" aria-hidden="true">${place.petIllustration || '🐾'}</span>
       </div>
       <div class="place-content">
@@ -323,31 +324,9 @@ function renderCards() {
  * Alterna o estado de favorito de um estabelecimento
  */
 function toggleFavorite(placeId, buttonElement) {
-  const isSaved = buttonElement.getAttribute("aria-pressed") !== "true";
-  const place = getPlaces().find((p) => p.id === placeId);
-  const placeName = place ? place.name : "Estabelecimento";
-
-  // Atualiza o botão no card
-  const card = renderedCardElements.find((c) => c.dataset.id === placeId);
-  if (card) {
-    const cardFavBtn = card.querySelector(".favorite");
-    if (cardFavBtn) {
-      cardFavBtn.setAttribute("aria-pressed", isSaved);
-      cardFavBtn.classList.toggle("saved", isSaved);
-      cardFavBtn.textContent = isSaved ? "♥" : "♡";
-      cardFavBtn.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${placeName} ${isSaved ? "dos" : "aos"} favoritos`);
-    }
+  if (!window.VetPertoFavorites?.toggle(placeId)) {
+    buttonElement?.focus();
   }
-
-  // Atualiza o botão no modal (se estiver aberto para o mesmo lugar)
-  if (modalFavoriteBtn && currentModalPlace && currentModalPlace.id === placeId) {
-    modalFavoriteBtn.setAttribute("aria-pressed", isSaved);
-    modalFavoriteBtn.classList.toggle("saved", isSaved);
-    modalFavoriteBtn.textContent = isSaved ? "♥" : "♡";
-    modalFavoriteBtn.setAttribute("aria-label", `${isSaved ? "Remover" : "Adicionar"} ${placeName} ${isSaved ? "dos" : "aos"} favoritos`);
-  }
-
-  showToast(isSaved ? `${placeName} salvo nos favoritos` : `${placeName} removido dos favoritos`);
 }
 
 /**
@@ -491,12 +470,13 @@ function openPlaceDetails(placeId, triggerElement = null) {
 
   // Sincroniza estado de favorito no modal
   if (modalFavoriteBtn) {
-    const card = renderedCardElements.find((c) => c.dataset.id === placeId);
-    const isSaved = card ? card.querySelector(".favorite")?.getAttribute("aria-pressed") === "true" : false;
+    const isSaved = window.VetPertoFavorites?.isFavorite(placeId) || false;
+    modalFavoriteBtn.dataset.favoriteId = placeId;
     modalFavoriteBtn.setAttribute("aria-pressed", isSaved);
     modalFavoriteBtn.classList.toggle("saved", isSaved);
     modalFavoriteBtn.textContent = isSaved ? "♥" : "♡";
     modalFavoriteBtn.onclick = () => toggleFavorite(place.id, modalFavoriteBtn);
+    window.VetPertoFavorites?.syncFavoriteButtons();
   }
 
   // Renderiza Aba 1: Serviços & Preços
@@ -650,10 +630,14 @@ function closePlaceDetails() {
   document.body.style.overflow = ""; // Libera rolagem do fundo
   currentModalPlace = null;
 
-  if (lastFocusedTrigger) {
+  if (lastFocusedTrigger?.isConnected) {
     lastFocusedTrigger.focus();
-    lastFocusedTrigger = null;
+  } else if (!document.querySelector("#favorites-view")?.hidden) {
+    document.querySelector("#favorites-title")?.focus();
+  } else {
+    document.querySelector("#page-title")?.focus();
   }
+  lastFocusedTrigger = null;
 }
 
 /**

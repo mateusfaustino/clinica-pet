@@ -10,6 +10,7 @@
   const DATE_RANGE_DAYS = 14;
 
   const homeView = document.querySelector("#home-view");
+  const favoritesView = document.querySelector("#favorites-view");
   const appointmentsView = document.querySelector("#appointments-view");
   const appointmentsTitle = document.querySelector("#appointments-title");
   const appointmentsList = document.querySelector("#appointments-list");
@@ -17,6 +18,7 @@
   const appointmentsEmpty = document.querySelector("#appointments-empty");
   const appointmentFilters = document.querySelectorAll(".appointment-filter");
   const navHome = document.querySelector("#nav-home");
+  const navFavorites = document.querySelector("#nav-favorites");
   const navAppointments = document.querySelector("#nav-appointments");
 
   const bookingModal = document.querySelector("#booking-modal");
@@ -208,24 +210,27 @@
 
   function showView(viewName, focusTitle = true) {
     const showAppointments = viewName === "appointments";
-    homeView.hidden = showAppointments;
+    const showFavorites = viewName === "favorites";
+    const showHome = !showAppointments && !showFavorites;
+    homeView.hidden = !showHome;
+    favoritesView.hidden = !showFavorites;
     appointmentsView.hidden = !showAppointments;
-    navHome.classList.toggle("active", !showAppointments);
+    navHome.classList.toggle("active", showHome);
+    navFavorites.classList.toggle("active", showFavorites);
     navAppointments.classList.toggle("active", showAppointments);
-    if (showAppointments) {
-      navHome.removeAttribute("aria-current");
-      navAppointments.setAttribute("aria-current", "page");
-    } else {
-      navHome.setAttribute("aria-current", "page");
-      navAppointments.removeAttribute("aria-current");
-    }
+    [navHome, navFavorites, navAppointments].forEach((item) => item.removeAttribute("aria-current"));
+    (showAppointments ? navAppointments : showFavorites ? navFavorites : navHome).setAttribute("aria-current", "page");
     if (showAppointments) {
       renderAppointments();
       if (focusTitle) appointmentsTitle.focus();
+    } else if (showFavorites) {
+      window.VetPertoFavorites?.render();
+      if (focusTitle) document.querySelector("#favorites-title")?.focus();
     } else {
       requestAnimationFrame(() => refreshMapViewport());
       if (focusTitle) document.querySelector("#page-title")?.focus();
     }
+    document.dispatchEvent(new CustomEvent("vetperto:viewchange", { detail: { view: viewName } }));
   }
 
   function getOperationalIntervals(place, dateKey) {
@@ -438,6 +443,6 @@
     trapBookingFocus(event);
   });
 
-  window.VetPertoAppointments = Object.freeze({ openBooking });
+  window.VetPertoAppointments = Object.freeze({ openBooking, showView });
   renderAppointments();
 })();

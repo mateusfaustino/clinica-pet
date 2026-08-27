@@ -90,6 +90,23 @@
       </section>
     </main>
 
+    <section class="favorites-view" id="favorites-view" aria-labelledby="favorites-title" hidden>
+      <header class="favorites-header">
+        <p class="eyebrow">Lugares que você ama 💛</p>
+        <h1 id="favorites-title" tabindex="-1">Meus favoritos</h1>
+        <p>Seus estabelecimentos preferidos ficam salvos neste navegador.</p>
+        <button class="back-to-favorites-search" id="back-from-favorites" type="button">← Encontrar estabelecimentos</button>
+      </header>
+      <p class="favorites-count" aria-live="polite"><strong id="favorites-count">0</strong> lugar(es) salvo(s)</p>
+      <div class="favorites-list" id="favorites-list"></div>
+      <div class="favorites-empty" id="favorites-empty" role="status" hidden>
+        <span aria-hidden="true">♡</span>
+        <h2>Você ainda não salvou nenhum lugar</h2>
+        <p>Toque no coração de um estabelecimento para encontrá-lo facilmente depois.</p>
+        <button type="button" id="find-favorites">Encontrar estabelecimentos</button>
+      </div>
+    </section>
+
     <section class="appointments-view" id="appointments-view" aria-labelledby="appointments-title" hidden>
       <header class="appointments-header">
         <p class="eyebrow">Agenda do seu pet 🐾</p>
@@ -117,7 +134,7 @@
 
     <nav class="bottom-nav" aria-label="Navegação principal">
       <a class="active" id="nav-home" href="#inicio" aria-current="page"><span aria-hidden="true">⌂</span>Início</a>
-      <a href="#"><span aria-hidden="true">♡</span>Favoritos</a>
+      <a id="nav-favorites" href="#favoritos"><span aria-hidden="true">♡</span>Favoritos</a>
       <button class="nav-search" type="button" aria-label="Buscar serviços"><span aria-hidden="true">⌕</span></button>
       <a id="nav-appointments" href="#agendamentos"><span aria-hidden="true">▣</span>Agendamentos</a>
     </nav>
@@ -262,5 +279,6 @@
   </script>
   <script src="script.js"></script>
   <script src="appointments.js"></script>
+  <script src="favorites.js"></script>
 </body>
 </html>

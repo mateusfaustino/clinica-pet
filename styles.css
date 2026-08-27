@@ -146,6 +146,29 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
 /* -------------------------------------------------------------
  * Página de agendamentos
  * ------------------------------------------------------------- */
+.favorites-view { min-height: calc(100vh - 72px); padding: 30px 20px 115px; background: var(--cream); }
+.favorites-header { max-width: 760px; margin: 0 auto; }
+.favorites-header h1 { font-size: clamp(30px, 8vw, 44px); }
+.favorites-header > p:not(.eyebrow) { margin: 10px 0 18px; color: var(--muted); }
+.back-to-favorites-search { min-height: 44px; padding: 0 14px; border: 0; border-radius: 13px; background: var(--orange-soft); color: var(--orange-dark); font-weight: 800; }
+.favorites-count { max-width: 760px; margin: 24px auto 12px; color: var(--muted); font-size: 12px; }
+.favorites-list { max-width: 760px; display: grid; gap: 12px; margin: 0 auto; }
+.favorite-place-card { display: grid; grid-template-columns: 92px minmax(0, 1fr); min-height: 180px; overflow: hidden; border: 1px solid #ebe6de; border-radius: 20px; background: white; box-shadow: 0 7px 22px rgba(44,64,59,.07); }
+.favorite-place-icon { display: grid; place-items: center; font-size: 43px; }
+.favorite-place-info { min-width: 0; padding: 15px 14px; }
+.favorite-category { color: var(--orange-dark); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+.favorite-place-info h2 { margin: 4px 0; font-family: "Fredoka"; font-size: 18px; line-height: 1.15; }
+.favorite-place-info > p { margin: 0 0 7px; color: var(--muted); font-size: 11px; }
+.favorite-availability { display: inline-block; padding: 4px 7px; border-radius: 8px; background: var(--mint); font-size: 10px; font-weight: 800; }
+.favorite-card-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.favorite-details { min-height: 44px; flex: 1; border: 0; border-radius: 12px; background: var(--orange-soft); color: var(--orange-dark); font-weight: 800; }
+.favorite-card-heart { position: static; flex: 0 0 44px; width: 44px; height: 44px; background: var(--orange); color: white; }
+.favorites-empty { max-width: 760px; margin: 20px auto; padding: 32px 20px; border: 1px dashed #d8d1c7; border-radius: 20px; background: white; text-align: center; }
+.favorites-empty > span { color: var(--orange); font-size: 42px; }
+.favorites-empty h2 { margin: 8px 0 4px; font-family: "Fredoka"; font-size: 20px; }
+.favorites-empty p { color: var(--muted); font-size: 13px; }
+.favorites-empty button { min-height: 44px; padding: 0 15px; border: 0; border-radius: 12px; background: var(--orange-soft); color: var(--orange-dark); font-weight: 800; }
+
 .appointments-view { min-height: calc(100vh - 72px); padding: 30px 20px 115px; background: var(--cream); }
 .appointments-header { max-width: 760px; margin: 0 auto; }
 .appointments-header h1 { font-size: clamp(30px, 8vw, 44px); }
@@ -320,6 +343,8 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
   .place-details-modal { left: 50%; top: 50%; bottom: auto; right: auto; width: min(92vw, 660px); max-height: 84vh; border-radius: 28px; transform: translate(-50%, -46%) scale(0.95); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1), opacity .3s ease; }
   .place-details-modal.is-open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
   .appointments-view { padding: 55px 40px 120px; }
+  .favorites-view { padding: 55px 40px 120px; }
+  .favorites-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .appointments-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .booking-modal { left: 50%; right: auto; bottom: auto; top: 50%; width: min(92vw, 680px); max-height: 86vh; border-radius: 28px; transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; }
   .booking-modal.is-open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
