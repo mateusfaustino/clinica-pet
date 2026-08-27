@@ -910,8 +910,11 @@ if (viewToggleBtn) {
 const navSearchBtn = document.querySelector(".nav-search");
 if (navSearchBtn) {
   navSearchBtn.addEventListener("click", () => {
-    searchInput.focus();
-    searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.VetPertoAppointments?.showView("home", false);
+    requestAnimationFrame(() => {
+      searchInput.focus();
+      searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
   });
 }
 
