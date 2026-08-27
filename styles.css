@@ -75,7 +75,7 @@ h1 em::after { content: ""; position: absolute; height: 6px; left: 3px; right: 0
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
 /* Marcadores avançados para o Google Maps */
-.map-pin { display: grid; place-items: center; width: 44px; height: 44px; border: 3px solid white; border-radius: 50% 50% 50% 12px; color: white; box-shadow: 0 6px 13px rgba(36,59,56,.25); transform: rotate(-45deg); transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .2s; cursor: pointer; }
+.map-pin { display: grid; place-items: center; width: 44px; height: 44px; border: 3px solid white; border-radius: 50% 50% 50% 12px; color: white; box-shadow: 0 6px 13px rgba(36,59,56,.25); transform: rotate(-45deg); transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .2s; cursor: pointer; touch-action: manipulation; user-select: none; }
 .map-pin span { transform: rotate(45deg); font-size: 18px; line-height: 1; }
 .map-pin:hover, gmp-advanced-marker:focus-visible .map-pin, .map-pin.selected { transform: rotate(-45deg) scale(1.22); box-shadow: 0 8px 20px rgba(36,59,56,.4); outline: none; z-index: 1000; }
 gmp-advanced-marker:focus-visible { outline: 3px solid var(--orange); outline-offset: 5px; }

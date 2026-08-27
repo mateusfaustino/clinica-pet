@@ -659,6 +659,34 @@ function activateMapPin(placeId, pinElement) {
 }
 
 /**
+ * Abre o pin com um toque curto, antes que o mapa o interprete como gesto.
+ */
+function registerDirectTouchActivation(pinElement, activate) {
+  let touchStart = null;
+
+  pinElement.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+    touchStart = { x: event.clientX, y: event.clientY, time: Date.now() };
+  });
+
+  pinElement.addEventListener("pointercancel", () => {
+    touchStart = null;
+  });
+
+  pinElement.addEventListener("pointerup", (event) => {
+    if (!touchStart || (event.pointerType !== "touch" && event.pointerType !== "pen")) return;
+    const moved = Math.hypot(event.clientX - touchStart.x, event.clientY - touchStart.y);
+    const elapsed = Date.now() - touchStart.time;
+    touchStart = null;
+    if (moved > 10 || elapsed > 600) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    activate();
+  });
+}
+
+/**
  * Alterna as abas internas do modal
  */
 function switchModalTab(targetTabId) {
@@ -726,7 +754,14 @@ async function initGoogleMap() {
       });
       marker.dataset.id = place.id;
 
+      let lastDirectTouchAt = 0;
+      registerDirectTouchActivation(pinElement, () => {
+        lastDirectTouchAt = Date.now();
+        activateMapPin(place.id, marker);
+      });
+
       marker.addEventListener("gmp-click", () => {
+        if (Date.now() - lastDirectTouchAt < 700) return;
         activateMapPin(place.id, marker);
       });
 
