@@ -23,10 +23,10 @@
       </button>
     </header>
 
-    <main>
+    <main id="home-view">
       <section class="intro" aria-labelledby="page-title">
         <p class="eyebrow">Olá, Marina! <span aria-hidden="true">👋</span></p>
-        <h1 id="page-title">Quem cuida do seu pet está <em>pertinho</em></h1>
+        <h1 id="page-title" tabindex="-1">Quem cuida do seu pet está <em>pertinho</em></h1>
         <p class="subtitle">Encontre o cuidado ideal sem ir longe.</p>
 
         <form class="search" role="search" id="search-form">
@@ -90,12 +90,73 @@
       </section>
     </main>
 
+    <section class="appointments-view" id="appointments-view" aria-labelledby="appointments-title" hidden>
+      <header class="appointments-header">
+        <p class="eyebrow">Agenda do seu pet 🐾</p>
+        <h1 id="appointments-title" tabindex="-1">Meus agendamentos</h1>
+        <p>Consulte os próximos cuidados confirmados para o seu pet.</p>
+        <button class="back-to-search" id="back-to-search" type="button">← Encontrar um serviço</button>
+      </header>
+
+      <div class="appointment-filters" aria-label="Filtrar agendamentos por data">
+        <button class="appointment-filter active" type="button" data-appointment-filter="all" aria-pressed="true">Todos</button>
+        <button class="appointment-filter" type="button" data-appointment-filter="today" aria-pressed="false">Hoje</button>
+        <button class="appointment-filter" type="button" data-appointment-filter="week" aria-pressed="false">Esta semana</button>
+      </div>
+
+      <p class="appointments-count" aria-live="polite"><strong id="appointments-count">0</strong> agendamento(s) encontrado(s)</p>
+      <div class="appointments-list" id="appointments-list"></div>
+      <div class="appointments-empty" id="appointments-empty" role="status" hidden>
+        <span aria-hidden="true">📅</span>
+        <h2>Nenhum agendamento neste período</h2>
+        <p>Escolha outro período ou encontre um novo serviço para o seu pet.</p>
+        <button type="button" id="show-all-appointments">Ver todos</button>
+        <button type="button" class="find-service-empty">Encontrar um serviço</button>
+      </div>
+    </section>
+
     <nav class="bottom-nav" aria-label="Navegação principal">
-      <a class="active" href="#" aria-current="page"><span aria-hidden="true">⌂</span>Início</a>
+      <a class="active" id="nav-home" href="#inicio" aria-current="page"><span aria-hidden="true">⌂</span>Início</a>
       <a href="#"><span aria-hidden="true">♡</span>Favoritos</a>
       <button class="nav-search" type="button" aria-label="Buscar serviços"><span aria-hidden="true">⌕</span></button>
-      <a href="#"><span aria-hidden="true">▣</span>Agendamentos</a>
+      <a id="nav-appointments" href="#agendamentos"><span aria-hidden="true">▣</span>Agendamentos</a>
     </nav>
+
+    <div class="booking-backdrop" id="booking-backdrop" aria-hidden="true"></div>
+    <section class="booking-modal" id="booking-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="booking-title">
+      <header class="booking-header">
+        <div>
+          <p class="eyebrow">Novo agendamento</p>
+          <h2 id="booking-title" tabindex="-1">Escolha um horário</h2>
+        </div>
+        <button class="booking-close" id="booking-close" type="button" aria-label="Fechar agendamento">✕</button>
+      </header>
+
+      <div class="booking-body">
+        <div id="booking-selection-step">
+          <div class="booking-context" id="booking-context"></div>
+          <fieldset class="booking-fieldset">
+            <legend>Escolha a data</legend>
+            <div class="booking-dates" id="booking-dates"></div>
+          </fieldset>
+          <fieldset class="booking-fieldset">
+            <legend>Horários disponíveis</legend>
+            <div class="booking-slots" id="booking-slots"></div>
+            <p class="booking-slots-empty" id="booking-slots-empty" hidden>Não há horários disponíveis nesta data. Escolha outro dia.</p>
+          </fieldset>
+          <button class="booking-primary" id="review-booking" type="button" disabled>Revisar agendamento</button>
+        </div>
+
+        <div id="booking-confirmation-step" hidden>
+          <div class="booking-summary" id="booking-summary"></div>
+          <p class="booking-local-notice">Este agendamento ficará salvo neste navegador. A clínica não receberá uma reserva externa.</p>
+          <div class="booking-confirm-actions">
+            <button class="booking-secondary" id="back-to-slots" type="button">Voltar</button>
+            <button class="booking-primary" id="confirm-booking" type="button">Confirmar agendamento</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Modal / Bottom Sheet de Detalhes do Estabelecimento -->
     <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"></div>
@@ -200,5 +261,6 @@
     });
   </script>
   <script src="script.js"></script>
+  <script src="appointments.js"></script>
 </body>
 </html>

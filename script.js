@@ -519,7 +519,11 @@ function openPlaceDetails(placeId, triggerElement = null) {
     modalServicesList.querySelectorAll(".book-service-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const serviceName = btn.dataset.service;
-        showToast(`Solicitação para "${serviceName}" enviada com sucesso! O local entrará em contato.`);
+        if (window.VetPertoAppointments) {
+          window.VetPertoAppointments.openBooking(place.id, serviceName, btn);
+        } else {
+          showToast("Não foi possível abrir os horários. Tente novamente.");
+        }
       });
     });
   }
@@ -892,6 +896,7 @@ if (modalBackdrop) {
 
 // Fechamento via Tecla Escape
 document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && document.querySelector("#booking-modal")?.classList.contains("is-open")) return;
   if (e.key === "Escape" && detailsModal && detailsModal.classList.contains("is-open")) {
     closePlaceDetails();
     return;
