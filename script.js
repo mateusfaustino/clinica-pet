@@ -630,14 +630,32 @@ function closePlaceDetails() {
   document.body.style.overflow = ""; // Libera rolagem do fundo
   currentModalPlace = null;
 
-  if (lastFocusedTrigger?.isConnected) {
-    lastFocusedTrigger.focus();
+  const focusTarget = lastFocusedTrigger;
+  const isMapMarker = focusTarget?.tagName === "GMP-ADVANCED-MARKER";
+  const markerIsVisible = isMapMarker && placeMarkers.get(focusTarget.dataset.id)?.marker.map === mapInstance;
+  const triggerIsVisible = focusTarget?.isConnected && (markerIsVisible || (!isMapMarker && focusTarget.getClientRects().length > 0));
+  if (triggerIsVisible) {
+    requestAnimationFrame(() => focusTarget.focus({ preventScroll: true }));
   } else if (!document.querySelector("#favorites-view")?.hidden) {
     document.querySelector("#favorites-title")?.focus();
   } else {
     document.querySelector("#page-title")?.focus();
   }
   lastFocusedTrigger = null;
+}
+
+/**
+ * Abre detalhes a partir do mapa sem aguardar rolagem ou reposicionamento.
+ */
+function activateMapPin(placeId, pinElement) {
+  const placeExists = getPlaces().some((place) => place.id === placeId);
+  if (!placeExists) {
+    console.warn("vetPerto: marcador sem estabelecimento correspondente.");
+    return;
+  }
+
+  openPlaceDetails(placeId, pinElement);
+  selectPlace(placeId, { scrollCard: false, panMap: false });
 }
 
 /**
@@ -693,23 +711,23 @@ async function initGoogleMap() {
     const places = getPlaces();
 
     places.forEach((place) => {
-      const pinElement = document.createElement("button");
+      const pinElement = document.createElement("div");
       pinElement.className = `map-pin ${place.colorClass} ${place.id === selectedPlaceId ? "selected" : ""}`;
       pinElement.setAttribute("data-id", place.id);
-      pinElement.setAttribute("type", "button");
-      pinElement.setAttribute("aria-label", `${place.name}, nota ${place.rating}`);
+      const availability = getPlaceAvailability(place);
       pinElement.innerHTML = `<span>${place.icon}</span>`;
 
       const marker = new AdvancedMarkerElement({
         map: mapInstance,
         position: place.coords,
-        title: `${place.name} (${place.neighborhood})`,
-        content: pinElement
+        title: `${place.name}, ${availability.label}, nota ${place.rating} (${place.neighborhood})`,
+        content: pinElement,
+        gmpClickable: true
       });
+      marker.dataset.id = place.id;
 
-      pinElement.addEventListener("click", () => {
-        selectPlace(place.id, { scrollCard: true, panMap: true });
-        openPlaceDetails(place.id, pinElement);
+      marker.addEventListener("gmp-click", () => {
+        activateMapPin(place.id, marker);
       });
 
       placeMarkers.set(place.id, { marker, element: pinElement });
