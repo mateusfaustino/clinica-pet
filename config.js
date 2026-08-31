@@ -8,8 +8,8 @@
  * 3. Substitua 'DEMO_MAP_ID' pelo seu Map ID criado no Google Cloud Console.
  */
 window.GOOGLE_MAPS_CONFIG = {
-  apiKey: "AIzaSyDlPeV9pl07qOHE8hYifKcWwCSq_rfoMok",
-  mapId: "238e48c6a87afdedd70c722b",
+  apiKey: "99",
+  mapId: "99",
   defaultCenter: { lat: -3.7380, lng: -38.5020 }, // Aldeota, Fortaleza - CE
   defaultZoom: 15
 };
