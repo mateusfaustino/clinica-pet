@@ -1,284 +1,203 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#fffaf2">
-  <meta name="description" content="Encontre clínicas veterinárias e petshops perto de você com a vetPerto.">
-  <title>vetPerto — cuidado pertinho de você</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Pitch executivo de Product Discovery sobre abandono de carrinho no e-commerce.">
+  <meta name="theme-color" content="#081a2e">
+  <title>Discovery Executivo | Da intenção à conversão</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23081a2e'/%3E%3Cpath d='M8 9h3l2 11h10l2-8H12' fill='none' stroke='%23f4b942' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='15' cy='24' r='1.5' fill='white'/%3E%3Ccircle cx='22' cy='24' r='1.5' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#" aria-label="vetPerto, início">
-        <span class="brand-mark" aria-hidden="true">🐾</span>
-        <span>vet<span>Perto</span></span>
-      </a>
-      <button class="avatar-button" type="button" aria-label="Abrir perfil de Marina">
-        <span aria-hidden="true">👩🏽</span>
-      </button>
-    </header>
-
-    <main id="home-view">
-      <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">Olá, Marina! <span aria-hidden="true">👋</span></p>
-        <h1 id="page-title" tabindex="-1">Quem cuida do seu pet está <em>pertinho</em></h1>
-        <p class="subtitle">Encontre o cuidado ideal sem ir longe.</p>
-
-        <form class="search" role="search" id="search-form">
-          <span class="search-icon" aria-hidden="true">⌕</span>
-          <label class="sr-only" for="search-input">Buscar clínica, petshop ou serviço</label>
-          <input id="search-input" type="search" placeholder="Clínica, petshop ou serviço..." autocomplete="off">
-          <button type="submit" aria-label="Buscar">Buscar</button>
-        </form>
-
-        <div class="location-row">
-          <span class="location-pin" aria-hidden="true">●</span>
-          <span>Próximo a <strong>Aldeota, Fortaleza</strong></span>
-          <button type="button" id="change-location">Alterar</button>
-        </div>
-
-        <div class="filters" aria-label="Filtrar resultados">
-          <button class="filter active" type="button" data-filter="Todos" aria-pressed="true"><span aria-hidden="true">✨</span> Todos</button>
-          <button class="filter" type="button" data-filter="Veterinária" aria-pressed="false"><span aria-hidden="true">🩺</span> Veterinário</button>
-          <button class="filter" type="button" data-filter="Petshop" aria-pressed="false"><span aria-hidden="true">🛍️</span> Petshop</button>
-          <button class="filter" type="button" data-filter="Banho" aria-pressed="false"><span aria-hidden="true">🫧</span> Banho & Tosa</button>
-        </div>
-        <button class="availability-filter" id="availability-filter" type="button" aria-pressed="false">
-          <span aria-hidden="true">🟢</span> Atendendo agora
-        </button>
-      </section>
-
-      <section class="map-section" aria-label="Mapa de serviços próximos">
-        <div class="map-wrapper">
-          <div class="map" id="map" role="region" aria-label="Mapa interativo do Google">
-            <div class="map-loading" id="map-loading">
-              <span class="loading-spinner" aria-hidden="true">🐾</span>
-              <p>Carregando mapa...</p>
-            </div>
-          </div>
-          <button class="map-expand-toggle" id="map-expand-toggle" type="button" aria-controls="map" aria-expanded="false" aria-label="Expandir mapa" title="Expandir mapa">
-            <span class="map-expand-icon" aria-hidden="true">⛶</span>
-            <span class="map-expand-label">Expandir mapa</span>
-          </button>
-          <button class="locate-me" id="locate-me" type="button" aria-label="Centralizar na minha localização">⌖</button>
-        </div>
-
-        <div class="results-panel">
-          <div class="panel-handle" aria-hidden="true"></div>
-          <div class="results-heading">
-            <div>
-              <p><span id="result-count">12</span> lugares por perto</p>
-              <span>Ordenados por distância</span>
-            </div>
-            <button type="button" id="view-toggle" aria-label="Alternar visualização"><span aria-hidden="true">☷</span> Lista</button>
-          </div>
-
-          <div class="cards" id="cards" aria-live="polite">
-            <!-- Os cards dos 100 estabelecimentos serão renderizados dinamicamente pelo script.js -->
-          </div>
-          <div class="results-empty" id="results-empty" role="status" aria-live="polite" hidden>
-            <span aria-hidden="true">🐾</span>
-            <p>Nenhum estabelecimento atendendo com estes critérios.</p>
-            <button type="button" id="clear-availability-filter">Mostrar todos os horários</button>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <section class="favorites-view" id="favorites-view" aria-labelledby="favorites-title" hidden>
-      <header class="favorites-header">
-        <p class="eyebrow">Lugares que você ama 💛</p>
-        <h1 id="favorites-title" tabindex="-1">Meus favoritos</h1>
-        <p>Seus estabelecimentos preferidos ficam salvos neste navegador.</p>
-        <button class="back-to-favorites-search" id="back-from-favorites" type="button">← Encontrar estabelecimentos</button>
-      </header>
-      <p class="favorites-count" aria-live="polite"><strong id="favorites-count">0</strong> lugar(es) salvo(s)</p>
-      <div class="favorites-list" id="favorites-list"></div>
-      <div class="favorites-empty" id="favorites-empty" role="status" hidden>
-        <span aria-hidden="true">♡</span>
-        <h2>Você ainda não salvou nenhum lugar</h2>
-        <p>Toque no coração de um estabelecimento para encontrá-lo facilmente depois.</p>
-        <button type="button" id="find-favorites">Encontrar estabelecimentos</button>
-      </div>
-    </section>
-
-    <section class="appointments-view" id="appointments-view" aria-labelledby="appointments-title" hidden>
-      <header class="appointments-header">
-        <p class="eyebrow">Agenda do seu pet 🐾</p>
-        <h1 id="appointments-title" tabindex="-1">Meus agendamentos</h1>
-        <p>Consulte os próximos cuidados confirmados para o seu pet.</p>
-        <button class="back-to-search" id="back-to-search" type="button">← Encontrar um serviço</button>
-      </header>
-
-      <div class="appointment-filters" aria-label="Filtrar agendamentos por data">
-        <button class="appointment-filter active" type="button" data-appointment-filter="all" aria-pressed="true">Todos</button>
-        <button class="appointment-filter" type="button" data-appointment-filter="today" aria-pressed="false">Hoje</button>
-        <button class="appointment-filter" type="button" data-appointment-filter="week" aria-pressed="false">Esta semana</button>
-      </div>
-
-      <p class="appointments-count" aria-live="polite"><strong id="appointments-count">0</strong> agendamento(s) encontrado(s)</p>
-      <div class="appointments-list" id="appointments-list"></div>
-      <div class="appointments-empty" id="appointments-empty" role="status" hidden>
-        <span aria-hidden="true">📅</span>
-        <h2>Nenhum agendamento neste período</h2>
-        <p>Escolha outro período ou encontre um novo serviço para o seu pet.</p>
-        <button type="button" id="show-all-appointments">Ver todos</button>
-        <button type="button" class="find-service-empty">Encontrar um serviço</button>
-      </div>
-    </section>
-
-    <nav class="bottom-nav" aria-label="Navegação principal">
-      <a class="active" id="nav-home" href="#inicio" aria-current="page"><span aria-hidden="true">⌂</span>Início</a>
-      <a id="nav-favorites" href="#favoritos"><span aria-hidden="true">♡</span>Favoritos</a>
-      <button class="nav-search" type="button"><span aria-hidden="true">⌕</span>Buscar</button>
-      <a id="nav-appointments" href="#agendamentos"><span aria-hidden="true">▣</span>Agendamentos</a>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="topbar" id="topo">
+    <a class="brand" href="#cenario" aria-label="Ir para o início">
+      <span class="brand-mark" aria-hidden="true">D</span>
+      <span><strong>Discovery Executivo</strong><small>Abandono de carrinho</small></span>
+    </a>
+    <nav class="story-nav" aria-label="Navegação da apresentação">
+      <a href="#cenario" data-section="cenario"><b>01</b><span>Cenário</span></a>
+      <a href="#descobertas" data-section="descobertas"><b>02</b><span>Descobertas</span></a>
+      <a href="#solucao" data-section="solucao"><b>03</b><span>Solução</span></a>
+      <a href="#viabilidade" data-section="viabilidade"><b>04</b><span>Viabilidade</span></a>
+      <a href="#metricas" data-section="metricas"><b>05</b><span>Métricas & pedido</span></a>
     </nav>
+    <button class="present-button" type="button" id="presentButton" aria-label="Ativar modo apresentação">
+      <span aria-hidden="true">◫</span> Apresentar
+    </button>
+    <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  </header>
 
-    <div class="booking-backdrop" id="booking-backdrop" aria-hidden="true"></div>
-    <section class="booking-modal" id="booking-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="booking-title">
-      <header class="booking-header">
-        <div>
-          <p class="eyebrow">Novo agendamento</p>
-          <h2 id="booking-title" tabindex="-1">Escolha um horário</h2>
-        </div>
-        <button class="booking-close" id="booking-close" type="button" aria-label="Fechar agendamento">✕</button>
-      </header>
-
-      <div class="booking-body">
-        <div id="booking-selection-step">
-          <div class="booking-context" id="booking-context"></div>
-          <fieldset class="booking-fieldset">
-            <legend>Escolha a data</legend>
-            <div class="booking-dates" id="booking-dates"></div>
-          </fieldset>
-          <fieldset class="booking-fieldset">
-            <legend>Horários disponíveis</legend>
-            <div class="booking-slots" id="booking-slots"></div>
-            <p class="booking-slots-empty" id="booking-slots-empty" hidden>Não há horários disponíveis nesta data. Escolha outro dia.</p>
-          </fieldset>
-          <button class="booking-primary" id="review-booking" type="button" disabled>Revisar agendamento</button>
-        </div>
-
-        <div id="booking-confirmation-step" hidden>
-          <div class="booking-summary" id="booking-summary"></div>
-          <p class="booking-local-notice">Este agendamento ficará salvo neste navegador. A clínica não receberá uma reserva externa.</p>
-          <div class="booking-confirm-actions">
-            <button class="booking-secondary" id="back-to-slots" type="button">Voltar</button>
-            <button class="booking-primary" id="confirm-booking" type="button">Confirmar agendamento</button>
+  <main id="conteudo">
+    <section class="hero story-section" id="cenario" data-index="1">
+      <div class="section-inner hero-grid">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><span>01</span> O cenário atual e a dor</p>
+          <h1>A intenção existe.<br><em>A conversão se perde.</em></h1>
+          <p class="lead">O cliente pesquisa, compara e escolhe. Mas, perto da decisão, incertezas sobre frete, prazo e custo total quebram a jornada — e receita potencial fica pelo caminho.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#descobertas">Explorar evidências</a>
+            <button class="button ghost" type="button" data-open-notes="cenario">Ver fala sugerida</button>
           </div>
+        </div>
+        <div class="signal-panel reveal" aria-label="Resumo do problema">
+          <div class="signal-heading">
+            <span class="signal-dot"></span>
+            <span>Sinal crítico no funil</span>
+            <strong>Receita em risco</strong>
+          </div>
+          <div class="funnel" aria-label="Funil da jornada atual">
+            <div style="--w:100%"><span>Descoberta</span><b>Interesse</b></div>
+            <div style="--w:82%"><span>Avaliação</span><b>Comparação</b></div>
+            <div style="--w:62%"><span>Carrinho</span><b>Intenção</b></div>
+            <div class="funnel-break" style="--w:40%"><span>Compra</span><b>Conversão</b></div>
+          </div>
+          <p class="signal-note"><strong>Leitura executiva</strong> O problema não é gerar interesse. É transformar o interesse já conquistado em compra concluída.</p>
+        </div>
+      </div>
+      <div class="impact-strip">
+        <span>Custo de aquisição já realizado</span><i></i><span>Intenção demonstrada</span><i></i><span class="warning">Valor não capturado</span>
+      </div>
+    </section>
+
+    <section class="story-section discoveries" id="descobertas" data-index="2">
+      <div class="section-inner">
+        <div class="section-heading reveal">
+          <div><p class="eyebrow"><span>02</span> O que descobrimos</p><h2>A ruptura começa <em>antes</em> do carrinho</h2></div>
+          <p>A jornada mostra uma degradação progressiva: curiosidade vira dúvida, intenção vira incerteza e o checkout concentra a frustração.</p>
+        </div>
+
+        <div class="persona-layout">
+          <article class="persona-card reveal">
+            <div class="persona-monogram" aria-hidden="true">F</div>
+            <div><span class="card-label">Proto-persona</span><h3>Fernanda, 29</h3><p>Consumidora digital, estudante de Arquitetura. Pesquisa tecnologia em múltiplas lojas e compara preço, características, frete e condições.</p></div>
+            <div class="persona-goal"><span>Objetivo</span><strong>Comprar com uma experiência simples, conveniente e transparente.</strong></div>
+            <p class="evidence-tag">Hipótese a confrontar com usuários reais</p>
+          </article>
+          <div class="insight-grid reveal">
+            <article><span class="insight-number">01</span><h3>Intenção real</h3><p>Adicionar ao carrinho é um sinal forte, mas não encerra a avaliação.</p></article>
+            <article><span class="insight-number">02</span><h3>Informação tardia</h3><p>Frete e prazo aparecem depois do momento em que o valor está sendo formado.</p></article>
+            <article><span class="insight-number">03</span><h3>Causalidade aberta</h3><p>Checkout, pagamento e comparação ainda precisam de evidências adicionais.</p></article>
+          </div>
+        </div>
+
+        <div class="journey reveal" aria-label="Jornada consolidada da persona">
+          <div class="journey-head"><h3>Jornada emocional</h3><span>Da descoberta ao abandono</span></div>
+          <div class="journey-track">
+            <article class="positive"><span>01</span><small>Descoberta</small><strong>Pesquisa</strong><p>Encontra opções</p><b>Positiva</b></article>
+            <article class="neutral"><span>02</span><small>Avaliação</small><strong>Compara</strong><p>Busca melhor opção</p><b>Dúvida</b></article>
+            <article class="concern"><span>03</span><small>Decisão</small><strong>Adiciona</strong><p>Condições incertas</p><b>Frustração</b></article>
+            <article class="critical"><span>04</span><small>Checkout</small><strong>Interrompe</strong><p>Frete pouco atrativo</p><b>Frustração elevada</b></article>
+          </div>
+        </div>
+        <div class="executive-insight reveal"><span>Insight-chave</span><strong>Não sabemos ainda se o frete causa o abandono. Sabemos que a avaliação do produto e a conclusão do checkout concentram incertezas que merecem um teste.</strong></div>
+      </div>
+    </section>
+
+    <section class="story-section solution" id="solucao" data-index="3">
+      <div class="section-inner">
+        <div class="section-heading light reveal">
+          <div><p class="eyebrow"><span>03</span> A aposta priorizada</p><h2>Antecipar a resposta que decide a compra</h2></div>
+          <p>Um experimento enxuto para responder, ainda na página do produto: “quanto realmente vai custar e quando vou receber?”</p>
+        </div>
+
+        <div class="bet-layout">
+          <article class="mvp-card reveal">
+            <div class="mvp-top"><span>Aposta #1</span><strong>ICE 80</strong></div>
+            <h3>Transparência antecipada de frete e prazo</h3>
+            <ul class="feature-list">
+              <li><span>CEP</span><div><strong>Consulta na página do produto</strong><small>Sem exigir avanço ao carrinho</small></div></li>
+              <li><span>R$</span><div><strong>Valor estimado do frete</strong><small>Custo total mais previsível</small></div></li>
+              <li><span>◷</span><div><strong>Prazo estimado de entrega</strong><small>Expectativa clara antes da decisão</small></div></li>
+              <li><span>✓</span><div><strong>Condições de frete grátis</strong><small>Quando aplicáveis</small></div></li>
+            </ul>
+          </article>
+          <div class="priority-board reveal">
+            <div class="priority-head"><div><span>Priorização ICE</span><small>Impacto × confiança × facilidade</small></div><button type="button" id="toggleScores" aria-expanded="false">Ver comparação</button></div>
+            <div class="winner"><span>01</span><div><strong>Transparência do frete</strong><small>5 × 4 × 4</small></div><b>80</b></div>
+            <div class="score-list" id="scoreList" hidden>
+              <div><span>Transparência do custo total</span><b>36</b></div>
+              <div><span>Fricções no checkout</span><b>30</b></div>
+              <div><span>Comparação de produtos</span><b>27</b></div>
+              <div><span>Condições comerciais</span><b>24</b></div>
+              <div><span>Continuidade da compra</span><b>24</b></div>
+              <div><span>Salvar para depois</span><b>16</b></div>
+            </div>
+            <p>Maior relação entre impacto potencial, evidência disponível e custo de aprendizado.</p>
+          </div>
+        </div>
+
+        <div class="flow-compare reveal">
+          <div class="flow-label"><span>Mudança proposta</span><strong>Informação antes da decisão</strong></div>
+          <div class="flow-row today"><b>Hoje</b><span>Produto</span><i></i><span>Carrinho</span><i></i><span>Checkout</span><i></i><span class="late">Descobre frete</span><i></i><span>Decide</span></div>
+          <div class="flow-row tomorrow"><b>MVP</b><span>Produto</span><i></i><span class="early">Descobre frete</span><i></i><span>Decide</span><i></i><span>Carrinho</span><i></i><span>Checkout</span></div>
         </div>
       </div>
     </section>
 
-    <!-- Modal / Bottom Sheet de Detalhes do Estabelecimento -->
-    <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"></div>
-    <aside class="place-details-modal" id="place-details-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-place-title">
-      <div class="modal-handle" aria-hidden="true"></div>
-      
-      <!-- Cabeçalho do Modal -->
-      <div class="modal-header">
-        <div class="modal-header-top">
-          <span class="modal-badge" id="modal-category-badge">Veterinária</span>
-          <div class="modal-header-actions">
-            <button class="modal-favorite-btn favorite" id="modal-favorite-btn" type="button" aria-label="Adicionar aos favoritos" aria-pressed="false">♡</button>
-            <button class="modal-close-btn" id="modal-close-btn" type="button" aria-label="Fechar detalhes (Esc)">✕</button>
+    <section class="story-section feasibility" id="viabilidade" data-index="4">
+      <div class="section-inner">
+        <div class="section-heading reveal">
+          <div><p class="eyebrow"><span>04</span> Viabilidade, esforço e riscos</p><h2>Aprender pequeno antes de investir grande</h2></div>
+          <p>O escopo é incremental e testável contra o fluxo atual. A proposta reduz a incerteza da decisão sem comprometer agora todo o checkout.</p>
+        </div>
+        <div class="feasibility-grid reveal">
+          <article class="why-card"><span class="card-label">Por que agora</span><div class="big-number">01</div><h3>Experimento controlado</h3><p>Implementação localizada na página de produto e comparação com o fluxo atual.</p><ul><li>Escopo limitado</li><li>Resultado mensurável</li><li>Decisão reversível</li></ul></article>
+          <div class="risk-panel">
+            <div class="risk-title"><h3>Mapa de riscos</h3><span>Probabilidade qualitativa</span></div>
+            <button class="risk-row high" type="button" aria-expanded="false"><span><b>Valor</b><small>E se frete não for a causa?</small></span><strong>Alto</strong><i>+</i><em>A conversão pode não reagir porque preço, cadastro ou intenção pesam mais.</em></button>
+            <button class="risk-row medium" type="button" aria-expanded="false"><span><b>Negócio</b><small>E se anteciparmos o abandono?</small></span><strong>Médio</strong><i>+</i><em>Expor um frete pouco competitivo mais cedo pode deslocar, e não reduzir, a desistência.</em></button>
+            <button class="risk-row medium" type="button" aria-expanded="false"><span><b>Técnico</b><small>E se a estimativa for inconsistente?</small></span><strong>Médio</strong><i>+</i><em>Valores ou prazos imprecisos podem comprometer confiança e experiência.</em></button>
+            <button class="risk-row high" type="button" aria-expanded="false"><span><b>Evidência</b><small>E se a premissa estiver enviesada?</small></span><strong>Alto</strong><i>+</i><em>A proto-persona e a jornada orientam a investigação; não são prova conclusiva.</em></button>
           </div>
         </div>
-        <div class="modal-place-hero">
-          <div class="modal-place-title-row">
-            <h2 id="modal-place-title">Nome do Estabelecimento</h2>
-            <span class="modal-rating" id="modal-place-rating">★ 4,9</span>
-          </div>
-          <p class="modal-availability" id="modal-availability"></p>
-          <p class="modal-address" id="modal-place-address">📍 Endereço completo...</p>
-        </div>
+        <div class="guardrail reveal"><span>Princípio de decisão</span><strong>Testar comportamento real antes de escalar.</strong><p>Se os dados confirmarem impacto, ampliamos. Se não, aprendemos com baixo custo.</p></div>
       </div>
+    </section>
 
-      <!-- Ações Rápidas -->
-      <div class="modal-quick-actions">
-        <button type="button" class="quick-action-btn primary" id="modal-action-whatsapp">
-          <span aria-hidden="true">💬</span> WhatsApp
-        </button>
-        <button type="button" class="quick-action-btn" id="modal-action-call">
-          <span aria-hidden="true">📞</span> Ligar
-        </button>
-        <button type="button" class="quick-action-btn" id="modal-action-route">
-          <span aria-hidden="true">🗺️</span> Como chegar
-        </button>
-        <button type="button" class="quick-action-btn" id="modal-action-share">
-          <span aria-hidden="true">↗️</span> Compartilhar
-        </button>
+    <section class="story-section metrics" id="metricas" data-index="5">
+      <div class="section-inner">
+        <div class="section-heading light reveal">
+          <div><p class="eyebrow"><span>05</span> Métricas e pedido ao Board</p><h2>Sucesso é compra concluída.<br><em>Não clique no simulador.</em></h2></div>
+          <p>A funcionalidade é o meio. O critério de decisão é impacto comprovado na conversão final, protegido por indicadores financeiros.</p>
+        </div>
+        <article class="north-star reveal">
+          <div class="star-icon" aria-hidden="true">✦</div>
+          <div><span>North Star Metric</span><h3>Taxa de conversão em compra dos usuários que chegam à página de produto</h3></div>
+          <div class="metric-formula"><span>Compras concluídas</span><i></i><span>Sessões em página de produto</span></div>
+        </article>
+        <div class="kpi-grid reveal">
+          <article><span>01</span><h3>Funil</h3><p>Produto → carrinho<br>Carrinho → checkout<br>Checkout → compra</p></article>
+          <article><span>02</span><h3>Comportamento</h3><p>Abandono do carrinho<br>Uso da consulta<br>Expostos × não expostos</p></article>
+          <article class="protection"><span>03</span><h3>Proteção financeira</h3><p>Receita por sessão<br>Ticket médio</p><small>Não deteriorar</small></article>
+        </div>
+        <div class="success-rule reveal"><span>Critério executivo de sucesso</span><strong>Aumento estatisticamente relevante na conversão final, sem deterioração relevante de receita por sessão ou ticket médio.</strong></div>
       </div>
+    </section>
 
-      <!-- Abas de Navegação Interna -->
-      <div class="modal-tabs" role="tablist" aria-label="Informações do estabelecimento">
-        <button class="modal-tab active" role="tab" id="tab-btn-services" aria-selected="true" aria-controls="tab-content-services" data-tab="services">
-          <span aria-hidden="true">✨</span> Serviços & Preços
-        </button>
-        <button class="modal-tab" role="tab" id="tab-btn-products" aria-selected="false" aria-controls="tab-content-products" data-tab="products">
-          <span aria-hidden="true">🛍️</span> Produtos
-        </button>
-        <button class="modal-tab" role="tab" id="tab-btn-about" aria-selected="false" aria-controls="tab-content-about" data-tab="about">
-          <span aria-hidden="true">ℹ️</span> Sobre & Horários
-        </button>
-        <button class="modal-tab" role="tab" id="tab-btn-reviews" aria-selected="false" aria-controls="tab-content-reviews" data-tab="reviews">
-          <span aria-hidden="true">⭐</span> Avaliações
-        </button>
+    <section class="board-ask" id="pedido">
+      <div class="ask-orbit" aria-hidden="true"></div>
+      <div class="section-inner reveal">
+        <p class="eyebrow"><span>DECISÃO</span> Pedido ao Board</p>
+        <h2>Aprovar um MVP pequeno,<br>mensurável e reversível.</h2>
+        <p>Não pedimos uma transformação ampla do checkout. Pedimos autorização para validar, com comportamento real, se remover essa incerteza aumenta a conversão.</p>
+        <div class="ask-actions"><button class="button accent" type="button" id="decisionButton">Aprovar experimento</button><a class="button outline-light" href="#cenario">Rever narrativa</a></div>
+        <div class="ask-terms"><span><b>Escopo</b> Consulta de frete e prazo no produto</span><span><b>Decisão</b> Escalar somente com impacto comprovado</span></div>
       </div>
+    </section>
+  </main>
 
-      <!-- Conteúdo das Abas -->
-      <div class="modal-body">
-        <!-- Aba: Serviços -->
-        <div class="tab-pane active" id="tab-content-services" role="tabpanel" aria-labelledby="tab-btn-services">
-          <div class="services-list" id="modal-services-list">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-        </div>
+  <footer><span>Product Discovery · Abandono de carrinho</span><a href="#pedido">Call to Action / Pedido ao Board</a></footer>
 
-        <!-- Aba: Produtos -->
-        <div class="tab-pane" id="tab-content-products" role="tabpanel" aria-labelledby="tab-btn-products" hidden>
-          <div class="products-grid" id="modal-products-grid">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-        </div>
-
-        <!-- Aba: Sobre & Horários -->
-        <div class="tab-pane" id="tab-content-about" role="tabpanel" aria-labelledby="tab-btn-about" hidden>
-          <div class="about-section" id="modal-about-content">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-        </div>
-
-        <!-- Aba: Avaliações -->
-        <div class="tab-pane" id="tab-content-reviews" role="tabpanel" aria-labelledby="tab-btn-reviews" hidden>
-          <div class="reviews-list" id="modal-reviews-list">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  </div>
-
-  <!-- Base de Dados de Estabelecimentos (100 locais em Fortaleza) -->
-  <script src="places.js"></script>
-  <!-- Configuração do Google Maps (carregada do config.js se existir) -->
-  <script src="config.js" onerror="window.GOOGLE_MAPS_CONFIG = window.GOOGLE_MAPS_CONFIG || null;"></script>
-  <!-- Bootstrap Loader Oficial do Google Maps -->
-  <script>
-    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.googleapis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-      key: window.GOOGLE_MAPS_CONFIG ? window.GOOGLE_MAPS_CONFIG.apiKey : "",
-      v: "weekly"
-    });
-  </script>
+  <dialog class="notes-dialog" id="notesDialog">
+    <div class="dialog-top"><span>Fala sugerida · Bloco <b id="noteNumber">1</b></span><button type="button" id="closeNotes" aria-label="Fechar">×</button></div>
+    <div class="dialog-body"><p id="noteText"></p></div>
+  </dialog>
+  <div class="decision-toast" id="decisionToast" role="status" aria-live="polite"><span>✓</span><div><strong>Decisão registrada</strong><small>Próximo passo: preparar o desenho do experimento.</small></div></div>
   <script src="script.js"></script>
-  <script src="appointments.js"></script>
-  <script src="favorites.js"></script>
 </body>
 </html>
